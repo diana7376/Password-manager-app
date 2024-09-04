@@ -1,7 +1,9 @@
 from rest_framework import serializers
-from .models import User
 
-class UserSerializer(serializers.ModelSerializer):
+
+from .models import Passwords
+
+class PasswordSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = Passwords
         fields = '__all__'
