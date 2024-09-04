@@ -16,7 +16,7 @@ def get_users(request):
 
 @api_view(['GET'])
 def get_passwords(request):
-    password_li = ["1234567890", "qwertyuiop", "ZXCVBNM", "password", "0987654321"]
+    password_li = ["1234567890", "iashviafhpaohih", "ZXCVBNM", "password", "0987654321"]
     return Response(password_li)
 
 @api_view(['POST'])
