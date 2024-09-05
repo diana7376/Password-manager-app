@@ -84,7 +84,6 @@ DATABASES = {
         'PASSWORD': 'AVNS_lO2rymWEMenFC0WURgB',
         'HOST': 'mysql-1687e190-maxcraftmd.g.aivencloud.com',
         'PORT': '18541'
-
     }
 }
 
