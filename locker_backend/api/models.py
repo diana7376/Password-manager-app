@@ -7,7 +7,7 @@ class PasswordItem(models.Model):
     password = models.CharField(max_length=100)
 
     class Meta:
-        table_db = 'password-item'
+        db_table = 'password-item'
 
     def __str__(self):
         return self.itemName

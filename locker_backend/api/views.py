@@ -10,7 +10,12 @@ def get_password_items(request):
 
 @api_view(['POST'])
 def create_password_item(request):
-    pass
+    serializer = PasswordItemSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    else:
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 @api_view(['GET', 'PUT', 'DELETE'])
 def password_item_details(request, pk):
