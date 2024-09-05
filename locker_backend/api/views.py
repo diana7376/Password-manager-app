@@ -1,5 +1,3 @@
-from django.core.serializers import serialize
-from django.shortcuts import render
 from .models import PasswordItem
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -9,8 +7,8 @@ from .serializers import PasswordItemSerializer
 def get_password_items(request):
     password_items = PasswordItem.objects.all()
     serializer = PasswordItemSerializer(password_items, many=True)
-    print(serializer)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    # print(serializer)
+    return Response(serializer.data)
 
 @api_view(['POST'])
 def create_password_item(request):
