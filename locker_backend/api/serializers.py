@@ -1,10 +1,10 @@
 from rest_framework import serializers
-from .models import PasswordItem, Groups
+from .models import PasswordItems, Groups
 
 
 class PasswordItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = PasswordItem
+        model = PasswordItems
         fields = '__all__'
 
 class GroupsSerializer(serializers.ModelSerializer):

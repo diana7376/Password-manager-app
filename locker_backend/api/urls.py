@@ -1,14 +1,20 @@
-from django.urls import path
 
-from .views import get_post_password_items, get_put_delete_password_items
+from django.urls import path, include
+from rest_framework_nested import routers
+
+from .password_items_view_set import PasswordItemsViewSet
+from .groups_view_set import GroupsViewSet
 
 
-urlpatterns = [
-    path('password-items/', get_post_password_items, name='get_password_items'),
-    path('password-items/', get_post_password_items, name='put_password_items'),
-    path('password-items/<int:pk>', get_put_delete_password_items, name='get_specific_password_items'),
-    path('password-items/<int:pk>', get_put_delete_password_items, name='put_password_items'),
-    path('password-items/<int:pk>', get_put_delete_password_items, name='delete_password_item'),
+router = routers.SimpleRouter()
+router.register(r'groups', GroupsViewSet, basename='groups')
+#router.register(r'password-items', PasswordItemsViewSet, basename='password-items')
 
-]
+pass_router = routers.NestedSimpleRouter(router, r'groups', lookup='groups')
+
+
+pass_router.register(r'password-items', PasswordItemsViewSet, basename='groups-password-item')
+#router.register(r'groups/{bk}/password-items/{pk}', PasswordItemsViewSet, basename='item')
+
+urlpatterns = router.urls
 
