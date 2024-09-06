@@ -2,7 +2,6 @@ from django.db import models
 from django.db.models import ForeignKey
 
 
-
 class Groups(models.Model):
     groupId = models.AutoField(primary_key=True)
     groupName = models.CharField(max_length=100)

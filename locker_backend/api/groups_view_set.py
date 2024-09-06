@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
@@ -6,12 +7,9 @@ from api.models import Groups
 from api.serializers import GroupsSerializer
 
 
-
-
 class GroupsViewSet(viewsets.ModelViewSet):
     queryset = Groups.objects.all()
     serializer_class = GroupsSerializer
-
 
     @action(methods=['get'], detail=True)
     def get_groups(self, request):
@@ -32,33 +30,26 @@ class GroupsViewSet(viewsets.ModelViewSet):
 
 
     @action(methods=['get'], detail=True)
-    def get_specific_groups(request, bk):
-        try:
-            user = Groups.objects.get(pk=bk)
-        except Groups.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
-
-        serializer = GroupsSerializer(user)
+    def get_specific_groups(self, request, pk=None):
+        queryset = Groups.objects.filter()
+        groups = get_object_or_404(queryset, pk=pk)
+        serializer = GroupsSerializer(groups)
         return Response(serializer.data)
 
     @action(methods=['put'], detail=True)
-    def put_groups(request, bk):
-        try:
-            user = Groups.objects.get(pk=bk)
-        except Groups.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+    def put_groups(self, request, pk = None):
+        queryset = Groups.objects.filter()
+        groups = get_object_or_404(queryset, pk=pk)
 
-        serializer = GroupsSerializer(user, data=request.data)
+        serializer = GroupsSerializer(groups,data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(methods=['delete'], detail=True)
-    def delete_groups(request, bk):
-        try:
-            user = Groups.objects.get(pk=bk)
-        except Groups.DoesNotExist:
-            return Response(status=status.HTTP_404_NOT_FOUND)
+    def delete_groups(self, request, pk = None):
+        queryset = Groups.objects.filter()
+        groups = get_object_or_404(queryset, pk=pk)
 
-        user.delete()
+        groups.delete()
