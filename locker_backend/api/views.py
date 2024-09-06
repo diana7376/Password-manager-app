@@ -71,3 +71,6 @@ def delete_password_items(request, pk):
         return Response(status=status.HTTP_404_NOT_FOUND)
 
     user.delete()
+
+
+

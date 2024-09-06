@@ -16,7 +16,7 @@ class PasswordItem(models.Model):
 
 class Groups(models.Model):
     groupId = models.AutoField(primary_key=True)
-    itemId = models.ForeignKey(PasswordItem, on_delete=models.CASCADE)
+    itemId = models.ForeignKey(PasswordItem,db_column= 'itemId', on_delete=models.CASCADE)
     groupName = models.CharField(max_length=100)
 
     class Meta:
