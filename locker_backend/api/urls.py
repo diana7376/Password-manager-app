@@ -16,7 +16,7 @@ Our endpoints:
 
 router = routers.SimpleRouter()
 router.register(r'groups', GroupsViewSet, basename='groups')
-pass_router = routers.NestedSimpleRouter(router, r'groups', lookup='groups_pk')
+pass_router = routers.NestedSimpleRouter(router, r'groups', lookup='groups')
 pass_router.register(r'password-items', PasswordItemsViewSet, basename='groups-password-item')
 
 urlpatterns = [
