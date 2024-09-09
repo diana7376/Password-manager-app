@@ -1,9 +1,10 @@
 from django.urls import path, include
 from rest_framework_nested import routers
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from .password_items_view_set import PasswordItemsViewSet
 from .groups_view_set import GroupsViewSet
-
+from .user_view_set import MyTokenObtainPairView, RegisterView
 
 """
 Our endpoints:
@@ -24,5 +25,8 @@ pass_router.register(r'password-items', PasswordItemsViewSet, basename='groups-p
 urlpatterns = [
     path(r'', include(router.urls)),
     path(r'', include(pass_router.urls)),
+    path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('register/', RegisterView.as_view(), name='auth_register'),
 ]
 
