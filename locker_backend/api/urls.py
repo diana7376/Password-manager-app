@@ -8,6 +8,7 @@ from .groups_view_set import GroupsViewSet
 """
 Our endpoints:
 
+/password-items/                            - GET all the password-items
 /groups/                                    - GET all groups, POST groups
 /groups/{pk}/                               - GET a specific group, PUT a specific group, DELETE a specific group
 /groups/{groups_pk}/password-items/         - GET all pass-items, POST pass-items
