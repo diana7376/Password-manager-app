@@ -2,21 +2,35 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-
+from rest_framework.permissions import IsAuthenticated
 from api.groups_view_set import GroupsViewSet
 from api.models import PasswordItems, Groups
 from api.serializers import PasswordItemSerializer
 
 
 class PasswordItemsViewSet(viewsets.ModelViewSet):
+    queryset = PasswordItems.objects.all()
     serializer_class = PasswordItemSerializer
-## Filtering the proper queryset based on the group_pk from url
+    permission_classes = [IsAuthenticated]
+
     def get_queryset(self):
-        try:
-            group_id = self.kwargs['groups_pk']
-            return PasswordItems.objects.filter(groupId=group_id)
-        except KeyError:
-            return PasswordItems.objects.all()
+        # Get only the password items for the logged-in user
+        user = self.request.user
+        return PasswordItems.objects.filter(userId=user)
+
+    def list(self, request, *args, **kwargs):
+        # Override the list method to return the filtered queryset
+        queryset = self.get_queryset()
+        serializer = PasswordItemSerializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['get'], url_path='unlisted')
+    def get_password_items_with_null_group(self, request):
+        # Filter for password items where groupId is null
+        user = self.request.user
+        queryset = PasswordItems.objects.filter(userId=user, groupId__isnull=True)
+        serializer = PasswordItemSerializer(queryset, many=True)
+        return Response(serializer.data)
 
     @action(methods=['get'], detail=False)
     def get_password_items_by_location(self, request, groups_pk=None):

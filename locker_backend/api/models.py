@@ -4,33 +4,6 @@ from django.db import models
 from django.db.models import ForeignKey
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
-
-
-class Groups(models.Model):
-    groupId = models.AutoField(primary_key=True)
-    groupName = models.CharField(max_length=100)
-
-    class Meta:
-        db_table = 'groups'
-
-    def __str__(self):
-        return self.groupName
-
-
-# Create your models here.
-class PasswordItems(models.Model):
-    itemName = models.CharField(max_length=100)
-    userName = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
-    groupId = models.ForeignKey(Groups, db_column='groupId', on_delete=models.CASCADE)
-
-    class Meta:
-        db_table = 'password-items'
-
-    def __str__(self):
-        return self.itemName
-
-
 class BaseUserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
         if not email:
@@ -65,3 +38,32 @@ class BaseUser(AbstractBaseUser):
 
     def __str__(self):
         return self.username
+
+
+class Groups(models.Model):
+    groupId = models.AutoField(primary_key=True)
+    groupName = models.CharField(max_length=100)
+    userId = models.ForeignKey(BaseUser, db_column='userId', on_delete=models.CASCADE, related_name="groups")
+    class Meta:
+        db_table = 'groups'
+
+    def __str__(self):
+        return self.groupName
+
+
+# Create your models here.
+class PasswordItems(models.Model):
+    itemName = models.CharField(max_length=100)
+    userName = models.CharField(max_length=100)
+    password = models.CharField(max_length=100)
+    groupId = models.ForeignKey(Groups, db_column='groupId', on_delete=models.CASCADE, null=True)
+    userId = models.ForeignKey(BaseUser, db_column='userId', on_delete=models.CASCADE, related_name="passwordItems")
+
+    class Meta:
+        db_table = 'password-items'
+
+    def __str__(self):
+        return self.itemName
+
+
+
