@@ -9,11 +9,12 @@ from .user_view_set import MyTokenObtainPairView, RegisterView
 """
 Our endpoints:
 
+/password_items/unlisted/                   - GET all the password-items with an unlisted group
 /password-items/                            - GET all the password-items
-/groups/                                    - GET all groups, POST groups
-/groups/{pk}/                               - GET a specific group, PUT a specific group, DELETE a specific group
-/groups/{groups_pk}/password-items/         - GET all pass-items, POST pass-items
-/groups/{groups_pk}/password-items/{pk}/    - GET a specific pass-items, PUT spec. pass-items, DELETE spec. pass-items
+/groups/                                    - GET all groups, POST (create) groups
+/groups/{pk}/                               - GET a specific group, PUT (update) a specific group, DELETE a specific group
+/groups/{groups_pk}/password-items/         - GET all pass-items, POST (create) pass-items
+/groups/{groups_pk}/password-items/{pk}/    - GET a spec. pass-items, PUT (update) spec. pass-items, DELETE spec. pass-items
 """
 
 router = routers.SimpleRouter()
