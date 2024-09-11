@@ -67,5 +67,30 @@ class PasswordItems(models.Model):
     def __str__(self):
         return self.itemName
 
+    # Overriding save method to handle password history
+    def save(self, *args, **kwargs):
+        # Check if it's an update (the object already exists in the database)
+        if self.pk:
+            old_password_item = PasswordItems.objects.get(pk=self.pk)
+            # Check if the password is being updated
+            if old_password_item.password != self.password:
+                # Create a new entry in PasswordHistory
+                PasswordHistory.objects.create(
+                    passId=self,
+                    old_passwords=old_password_item.password
+                )
+        # Call the original save method
+        super(PasswordItems, self).save(*args, **kwargs)
 
+
+class PasswordHistory(models.Model):
+    # userId = models.ForeignKey(BaseUser, db_column='userId', on_delete=models.CASCADE, null=True)
+    passId = models.ForeignKey(PasswordItems, db_column='passId', on_delete=models.CASCADE)
+    old_passwords = models.CharField(max_length=100)
+
+    class Meta:
+        db_table = 'password-history'
+
+    def __str__(self):
+        return self.passId
 

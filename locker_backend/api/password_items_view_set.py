@@ -3,10 +3,8 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from api.groups_view_set import GroupsViewSet
-from api.models import PasswordItems, Groups
+from api.models import PasswordItems, Groups, PasswordHistory
 from api.serializers import PasswordItemSerializer
-
 
 class PasswordItemsViewSet(viewsets.ModelViewSet):
     queryset = PasswordItems.objects.all()
@@ -62,15 +60,16 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(methods=['put'], detail=True)
-    def put_password_items(self, request, pk=None, groups_pk = None):
-        queryset = PasswordItems.objects.filter(pk=pk, groups=groups_pk)
+    def put_password_items(self, request, pk=None, groups_pk=None):
+        queryset = PasswordItems.objects.filter(pk=pk, groupId=groups_pk)
         password_items = get_object_or_404(queryset, pk=pk)
 
         serializer = PasswordItemSerializer(password_items, data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            serializer.save()  # This will trigger the save method in the model
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
     @action(methods=['delete'], detail=True)
     def delete_password_items(self, request, pk=None, groups_pk = None):

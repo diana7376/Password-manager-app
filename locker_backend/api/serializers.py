@@ -3,7 +3,7 @@ from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
-from .models import PasswordItems, Groups, BaseUser
+from .models import PasswordItems, Groups, BaseUser, PasswordHistory
 
 
 class PasswordItemSerializer(serializers.ModelSerializer):
@@ -72,3 +72,9 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.save()
 
         return user
+
+
+class PasswordHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PasswordHistory
+        fields = '__all__'
