@@ -3,7 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from api.models import PasswordItems, Groups
+from api.models import PasswordItems, Groups, decrypt_password
 from api.serializers import PasswordItemSerializer
 from rest_framework.exceptions import ValidationError
 
@@ -17,13 +17,18 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         group_id = self.kwargs.get('groups_pk')
         if group_id:
-            return PasswordItems.objects.filter(userId=user, groupId=group_id)
+            return PasswordItems.objects.filter(groupId=group_id)
         return PasswordItems.objects.filter(userId=user)
 
     def list(self, request, *args, **kwargs):
         # Override the list method to return filtered password items
         queryset = self.get_queryset()
         serializer = PasswordItemSerializer(queryset, many=True)
+
+        # Decrypt passwords before returning the response
+        for item in serializer.data:
+            item['password'] = decrypt_password(item['password'])
+
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='unlisted')
@@ -32,6 +37,11 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = PasswordItems.objects.filter(userId=user, groupId__isnull=True)
         serializer = PasswordItemSerializer(queryset, many=True)
+
+        # Decrypt passwords before returning the response
+        for item in serializer.data:
+            item['password'] = decrypt_password(item['password'])
+
         return Response(serializer.data)
 
     @action(methods=['post'], detail=True)
@@ -49,11 +59,30 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=True)
     def get_specific_password_items(self, request, pk=None, groups_pk=None):
-        # Retrieve a specific password item within a specific group
         queryset = PasswordItems.objects.filter(pk=pk, groupId=groups_pk)
-        password_items = get_object_or_404(queryset, pk=pk)
-        serializer = PasswordItemSerializer(password_items)
-        return Response(serializer.data)
+        password_item = get_object_or_404(queryset, pk=pk)
+        serializer = PasswordItemSerializer(password_item)
+
+        # Decrypt the password before returning
+        password_item_data = serializer.data
+        password_item_data['password'] = decrypt_password(password_item_data['password'])
+
+        return Response(password_item_data)
+
+    def retrieve(self, request, pk=None, groups_pk=None):
+        # Adjust the queryset to filter by groupId if groups_pk is provided
+        if groups_pk:
+            password_item = get_object_or_404(self.queryset.filter(groupId=groups_pk), pk=pk)
+        else:
+            password_item = get_object_or_404(self.queryset, pk=pk)
+
+        serializer = PasswordItemSerializer(password_item)
+
+        # Decrypt the password before returning
+        password_item_data = serializer.data
+        password_item_data['password'] = decrypt_password(password_item_data['password'])
+
+        return Response(password_item_data)
 
     @action(methods=['put'], detail=True)
     def put_password_items(self, request, pk=None, groups_pk=None):

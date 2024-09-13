@@ -3,6 +3,17 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.db.models import ForeignKey
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from cryptography.fernet import Fernet
+
+
+ENCRYPTION_KEY = b'ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg='
+cipher_suite = Fernet(ENCRYPTION_KEY)
+
+def encrypt_password(password):
+    return cipher_suite.encrypt(password.encode()).decode()
+
+def decrypt_password(password):
+    return cipher_suite.decrypt(password.encode()).decode()
 
 class BaseUserManager(BaseUserManager):
     def create_user(self, username, email, password=None):
@@ -57,7 +68,7 @@ class PasswordItems(models.Model):
     userId = models.ForeignKey(BaseUser, db_column='userId', on_delete=models.CASCADE, related_name="passwordItems")
     itemName = models.CharField(max_length=100)
     userName = models.CharField(max_length=100)
-    password = models.CharField(max_length=100)
+    password = models.CharField(max_length=255)
     url = models.CharField(max_length=255, null=True)
     comment = models.CharField(max_length=255, null=True)
 
@@ -79,6 +90,7 @@ class PasswordItems(models.Model):
                     passId=self,
                     old_passwords=old_password_item.password
                 )
+        self.password = encrypt_password(self.password) #ENCRYPTION
         # Call the original save method
         super(PasswordItems, self).save(*args, **kwargs)
 
@@ -86,7 +98,7 @@ class PasswordItems(models.Model):
 class PasswordHistory(models.Model):
     # userId = models.ForeignKey(BaseUser, db_column='userId', on_delete=models.CASCADE, null=True)
     passId = models.ForeignKey(PasswordItems, db_column='passId', on_delete=models.CASCADE)
-    old_passwords = models.CharField(max_length=100)
+    old_passwords = models.CharField(max_length=255)
 
     class Meta:
         db_table = 'password-history'
