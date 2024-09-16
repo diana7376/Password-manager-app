@@ -83,14 +83,18 @@ class PasswordItems(models.Model):
         # Check if it's an update (the object already exists in the database)
         if self.pk:
             old_password_item = PasswordItems.objects.get(pk=self.pk)
-            # Check if the password is being updated
-            if old_password_item.password != self.password:
+            decrypted_old_password = decrypt_password(old_password_item.password)
+
+            # Check if the decrypted password is being updated
+            if decrypted_old_password != self.password:
                 # Create a new entry in PasswordHistory
                 PasswordHistory.objects.create(
                     passId=self,
                     old_passwords=old_password_item.password
                 )
-        self.password = encrypt_password(self.password) #ENCRYPTION
+        # Encrypt password before saving
+        self.password = encrypt_password(self.password)
+
         # Call the original save method
         super(PasswordItems, self).save(*args, **kwargs)
 
