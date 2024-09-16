@@ -13,11 +13,24 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        # Filter password items by the authenticated user and groupId (if provided)
         user = self.request.user
         group_id = self.kwargs.get('groups_pk')
+
+        # Check if the request method is PUT or DELETE
+        if self.request.method in ['PUT', 'DELETE']:
+            # Convert 'null' to None for PUT and DELETE requests
+            if group_id == 'null':
+                group_id = None
+
+            # For PUT and DELETE, filter by groupId, allowing for groupId to be None
+            if group_id is None:
+                return PasswordItems.objects.filter(userId=user, groupId__isnull=True)
+            return PasswordItems.objects.filter(userId=user, groupId=group_id)
+
+        # For GET and POST requests, use the original behavior
         if group_id:
             return PasswordItems.objects.filter(groupId=group_id)
+
         return PasswordItems.objects.filter(userId=user)
 
     def list(self, request, *args, **kwargs):
@@ -86,8 +99,16 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
 
     @action(methods=['put'], detail=True)
     def put_password_items(self, request, pk=None, groups_pk=None):
-        # Update a specific password item in a group
-        queryset = PasswordItems.objects.filter(pk=pk, groupId=groups_pk)
+        # Check if 'groups_pk' is a string 'null' and treat it as None
+        if groups_pk == 'null':
+            groups_pk = None
+
+        # Allow groupId to be None
+        if groups_pk is None:
+            queryset = PasswordItems.objects.filter(pk=pk, groupId__isnull=True)
+        else:
+            queryset = PasswordItems.objects.filter(pk=pk, groupId=groups_pk)
+
         password_items = get_object_or_404(queryset, pk=pk)
 
         serializer = PasswordItemSerializer(password_items, data=request.data)
@@ -98,7 +119,12 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
 
     @action(methods=['delete'], detail=True)
     def delete_password_items(self, request, pk=None, groups_pk=None):
-        # Delete a specific password item in a group
-        queryset = PasswordItems.objects.filter(pk=pk, groupId=groups_pk)
+        # Allow deletion without a specific groupId
+        if groups_pk is None:
+            queryset = PasswordItems.objects.filter(pk=pk, groupId__isnull=True)
+        else:
+            queryset = PasswordItems.objects.filter(pk=pk, groupId=groups_pk)
+
         password_items = get_object_or_404(queryset, pk=pk)
         password_items.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
