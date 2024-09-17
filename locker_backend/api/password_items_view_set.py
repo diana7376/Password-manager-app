@@ -58,10 +58,7 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
     @action(methods=['post'], detail=True)
-    def create_password_item(self, request, groups_pk=None):
-        # Force the groupId to match the one in the URL
-        request.data['groupId'] = groups_pk  # Override the groupId in the request data
-
+    def create_password_item(self, request):
         # Proceed with the creation using the corrected groupId
         serializer = PasswordItemSerializer(data=request.data)
         if serializer.is_valid():

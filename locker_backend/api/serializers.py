@@ -10,9 +10,18 @@ class PasswordItemSerializer(serializers.ModelSerializer):
     parent_lookup_kwargs = {
         'groups_pk' : 'groups_pk',
     }
+    #userId = serializers.IntegerField(required=False,allow_null=True)
     class Meta:
         model = PasswordItems
         fields = '__all__'
+        read_only_fields = ['userId']  # Ensure userId is read-only
+
+    def create(self, validated_data):
+        # Assign the userId explicitly from the view
+        validated_data['userId'] = self.context['request'].user
+        return super().create(validated_data)
+
+
 
 class GroupsSerializer(serializers.ModelSerializer):
     class Meta:
