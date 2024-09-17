@@ -84,11 +84,11 @@ WSGI_APPLICATION = 'locker_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'defaultdb',
-        'USER': 'avnadmin',
-        'PASSWORD': 'AVNS_lO2rymWEMenFC0WURgB',
-        'HOST': 'mysql-1687e190-maxcraftmd.g.aivencloud.com',
-        'PORT': '18541'
+        'NAME': 'test',
+        'USER': 'root',
+        'PASSWORD': '+c6A8kd$25',
+        'HOST': 'localhost',
+        'PORT': '3306'
     }
 }
 
@@ -109,7 +109,7 @@ SIMPLE_JWT = {
 
     'AUTH_HEADER_TYPES': ('Bearer',),
     'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
-    'USER_ID_FIELD': 'id',
+    'USER_ID_FIELD': 'user_id',
     'USER_ID_CLAIM': 'user_id',
     'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
 
@@ -153,7 +153,8 @@ TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
-USE_TZ = True
+USE_TZ = False
+
 
 
 # Static files (CSS, JavaScript, Images)

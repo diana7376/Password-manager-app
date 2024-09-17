@@ -14,11 +14,11 @@ class PasswordItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = PasswordItems
         fields = '__all__'
-        read_only_fields = ['userId']  # Ensure userId is read-only
+        read_only_fields = ['user_id']  # Ensure userId is read-only
 
     def create(self, validated_data):
         # Assign the userId explicitly from the view
-        validated_data['userId'] = self.context['request'].user
+        validated_data['user_id'] = self.context['request'].user
         return super().create(validated_data)
 
 
@@ -27,11 +27,21 @@ class GroupsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Groups
         fields = '__all__'
+        read_only_fields = ['user_id']
+
+    def create(self, validated_data):
+        # Assign the userId explicitly from the view
+        validated_data['user_id'] = self.context['request'].user
+        return super().create(validated_data)
+
+
+
 
 class BaseUserSerializer(serializers.ModelSerializer):
     class Meta:
        model = BaseUser
        fields = '__all__'
+
 
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     @classmethod
@@ -62,7 +72,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = BaseUser
-        fields = ('username', 'email', 'password', 'password2',)
+        fields = ('user_name', 'email', 'password', 'password2',)
 
     def validate(self, attrs):
         if attrs['password'] != attrs['password2']:
@@ -73,7 +83,7 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = BaseUser.objects.create(
-            username=validated_data['username'],
+            user_name=validated_data['user_name'],
             email=validated_data['email'],
         )
 
@@ -84,6 +94,8 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class PasswordHistorySerializer(serializers.ModelSerializer):
+    updated_at = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S")
+
     class Meta:
         model = PasswordHistory
         fields = '__all__'

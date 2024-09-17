@@ -1,7 +1,6 @@
 from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import User
 from django.db import models
-from django.db.models import ForeignKey
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from cryptography.fernet import Fernet
 
@@ -16,30 +15,31 @@ def decrypt_password(password):
     return cipher_suite.decrypt(password.encode()).decode()
 
 class BaseUserManager(BaseUserManager):
-    def create_user(self, username, email, password=None):
+    def create_user(self, user_name, email, password=None):
         if not email:
             raise ValueError('Users must have an email address')
-        if not username:
-            raise ValueError('Users must have a username')
+        if not user_name:
+            raise ValueError('Users must have a user_name')
 
         user = self.model(
             email=self.normalize_email(email),
-            username=username,
+            user_name=user_name,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def get_by_natural_key(self, username):
-        return self.get(username=username)
+    def get_by_natural_key(self, user_name):
+        return self.get(user_name=user_name)
 
 
 class BaseUser(AbstractBaseUser):
-    username = models.CharField(max_length=100, unique=True)
-    email = models.EmailField(unique=True)
-    password = models.CharField(max_length=100)
+    user_id = models.AutoField(primary_key=True, db_column='UserId')
+    user_name = models.CharField(max_length=100, unique=True, db_column='UserName')
+    email = models.EmailField(unique=True, db_column='Email')
+    password = models.CharField(max_length=100, db_column='Password')
 
-    USERNAME_FIELD = 'username'
+    USERNAME_FIELD = 'user_name'
     REQUIRED_FIELDS = ['email']
 
     objects = BaseUserManager()
@@ -48,35 +48,35 @@ class BaseUser(AbstractBaseUser):
         db_table = 'base-users'
 
     def __str__(self):
-        return self.username
+        return self.user_name
 
 
 class Groups(models.Model):
-    groupId = models.AutoField(primary_key=True)
-    userId = models.ForeignKey(BaseUser, db_column='userId', on_delete=models.CASCADE, related_name="groups")
-    groupName = models.CharField(max_length=100)
+    group_id = models.AutoField(primary_key=True, db_column='GroupId')
+    user_id = models.ForeignKey(BaseUser, db_column='UserId', on_delete=models.CASCADE, related_name="groups")
+    group_name = models.CharField(max_length=100, db_column='GroupName')
     class Meta:
         db_table = 'groups'
 
     def __str__(self):
-        return self.groupName
+        return self.group_name
 
 
 # Create your models here.
 class PasswordItems(models.Model):
-    groupId = models.ForeignKey(Groups, db_column='groupId', on_delete=models.CASCADE, null=True)
-    userId = models.ForeignKey(BaseUser, db_column='userId', on_delete=models.CASCADE, related_name="passwordItems")
-    itemName = models.CharField(max_length=100)
-    userName = models.CharField(max_length=100)
-    password = models.CharField(max_length=255)
-    url = models.CharField(max_length=255, null=True)
-    comment = models.CharField(max_length=255, null=True)
+    group_id = models.ForeignKey(Groups, db_column='GroupId', on_delete=models.CASCADE, null=True)
+    user_id = models.ForeignKey(BaseUser, db_column='UserId', on_delete=models.CASCADE, related_name="passwordItems")
+    item_name = models.CharField(max_length=100, db_column='ItemName')
+    user_name = models.CharField(max_length=100, db_column='UserName')
+    password = models.CharField(max_length=255, db_column='Password')
+    url = models.CharField(max_length=255, null=True, db_column='Url')
+    comment = models.CharField(max_length=255, null=True, db_column='Comment')
 
     class Meta:
         db_table = 'password-items'
 
     def __str__(self):
-        return self.itemName
+        return self.item_name
 
     # Overriding save method to handle password history
     def save(self, *args, **kwargs):
@@ -89,7 +89,7 @@ class PasswordItems(models.Model):
             if decrypted_old_password != self.password:
                 # Create a new entry in PasswordHistory
                 PasswordHistory.objects.create(
-                    passId=self,
+                    pass_id=self,
                     old_passwords=old_password_item.password
                 )
         # Encrypt password before saving
@@ -100,13 +100,14 @@ class PasswordItems(models.Model):
 
 
 class PasswordHistory(models.Model):
-    # userId = models.ForeignKey(BaseUser, db_column='userId', on_delete=models.CASCADE, null=True)
-    passId = models.ForeignKey(PasswordItems, db_column='passId', on_delete=models.CASCADE)
-    old_passwords = models.CharField(max_length=255)
+    # user_id = models.ForeignKey(BaseUser, db_column='user_id', on_delete=models.CASCADE, null=True)
+    pass_id = models.ForeignKey(PasswordItems, db_column='PassId', on_delete=models.CASCADE)
+    old_passwords = models.CharField(max_length=255, db_column='OldPasswords')
+    updated_at = models.DateTimeField(auto_now=True, db_column='UpdatedAt')
 
     class Meta:
         db_table = 'password-history'
 
     def __str__(self):
-        return self.passId
+        return self.pass_id
 

@@ -12,7 +12,7 @@ class PasswordHistoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter(passId__userId=user)  # Filter by user if needed
+        return self.queryset.filter(pass_id__user_id=user)  # Filter by user if needed
 
     def list(self, request, *args, **kwargs):
         try:

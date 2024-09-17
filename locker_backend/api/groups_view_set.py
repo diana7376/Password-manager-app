@@ -15,7 +15,7 @@ class GroupsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         # Filter the groups by the authenticated user
-        return Groups.objects.filter(userId=self.request.user)
+        return Groups.objects.filter(user_id=self.request.user)
 
     @action(methods=['get'], detail=False)
     def get_groups(self, request):
