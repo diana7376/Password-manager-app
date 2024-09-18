@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 from cryptography.fernet import Fernet
-
+from rest_framework.exceptions import ValidationError
 
 ENCRYPTION_KEY = b'ZmDfcTF7_60GrrY167zsiPd67pEvs0aGOv2oasOM1Pg='
 cipher_suite = Fernet(ENCRYPTION_KEY)
@@ -87,11 +87,18 @@ class PasswordItems(models.Model):
 
             # Check if the decrypted password is being updated
             if decrypted_old_password != self.password:
+                # Fetch old passwords from PasswordHistory
+                old_passwords = PasswordHistory.objects.filter(pass_id=self).values_list('old_passwords', flat=True)
+                for old_password in old_passwords:
+                    if decrypt_password(old_password) == self.password:
+                        raise ValidationError("The new password must be different from previous passwords.")
+
                 # Create a new entry in PasswordHistory
                 PasswordHistory.objects.create(
                     pass_id=self,
                     old_passwords=old_password_item.password
                 )
+
         # Encrypt password before saving
         self.password = encrypt_password(self.password)
 
