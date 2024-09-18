@@ -9,24 +9,27 @@ class PasswordHistoryViewSet(viewsets.ModelViewSet):
     queryset = PasswordHistory.objects.all()
     serializer_class = PasswordHistorySerializer
     permission_classes = [IsAuthenticated]
+    lookup_field = 'pass_id'  # We're using pass_id instead of pk
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter(pass_id__user_id=user)  # Filter by user if needed
+        return self.queryset.filter(pass_id__user_id=user)  # Filter by user
 
-    def list(self, request, *args, **kwargs):
-        try:
-            queryset = self.get_queryset()
-            serializer = PasswordHistorySerializer(queryset, many=True)
+    def retrieve(self, request, *args, **kwargs):
+        pass_id = kwargs.get('pass_id')
+        queryset = self.get_queryset().filter(pass_id=pass_id)
 
-            # Decrypt the passwords before returning the response
-            for item in serializer.data:
-                try:
-                    item['old_passwords'] = decrypt_password(item['old_passwords'])
-                except Exception:
-                    item['old_passwords'] = "Error decrypting password"
+        if not queryset.exists():
+            raise APIException(f"No password history found for pass_id: {pass_id}")
 
-            return Response(serializer.data)
-        except Exception as e:
-            # Raise an APIException for any errors encountered
-            raise APIException("An error occurred while processing your request.")
+        serializer = PasswordHistorySerializer(queryset, many=True)
+
+        # Decrypt passwords before returning the response
+        data = serializer.data
+        for item in data:
+            try:
+                item['old_passwords'] = decrypt_password(item['old_passwords'])
+            except Exception:
+                item['old_passwords'] = "Error decrypting password"
+
+        return Response(data)

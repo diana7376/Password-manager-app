@@ -20,4 +20,5 @@ urlpatterns = [
     path('token/', MyTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('register/', RegisterView.as_view(), name='auth_register'),
+    path('password-history/<int:pass_id>/', PasswordHistoryViewSet.as_view({'get': 'retrieve'}), name='password-history-detail'),  # Add this line for detail view
 ]
