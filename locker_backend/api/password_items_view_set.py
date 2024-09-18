@@ -1,3 +1,6 @@
+import string
+import secrets
+from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.decorators import action
@@ -125,3 +128,32 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         password_items = get_object_or_404(queryset, pk=pk)
         password_items.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['post'], url_path='generate')
+    def generate_password(self, request):
+        try:
+            characters = []
+
+            if request.data.get('uppercase', 'false'):
+                characters.extend(list(string.ascii_uppercase))
+            if request.data.get('lowercase', 'false'):
+                characters.extend(list(string.ascii_lowercase))
+            if request.data.get('digits', 'false'):
+                characters.extend(list(string.digits))
+            if request.data.get('symbols', 'false'):
+                characters.extend("!#$%&'()*+,-./:;<=>?@[]^_`{|}~")
+
+            length = int(request.data.get('length', 16))
+
+            if not characters:
+                return Response({'error': 'No character types selected'}, status=status.HTTP_400_BAD_REQUEST)
+
+            password = ''.join(secrets.choice(characters) for _ in range(length))
+
+            # Print the generated password to the server logs
+            print(f"Generated password: {password}")
+
+            return JsonResponse({'generated_password': password})
+
+        except Exception as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
