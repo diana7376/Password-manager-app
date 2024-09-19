@@ -2,31 +2,14 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-
 from .models import PasswordItems, Groups, BaseUser, PasswordHistory
 
-
-class PasswordItemSerializer(serializers.ModelSerializer):
-    parent_lookup_kwargs = {
-        'groups_pk' : 'groups_pk',
-    }
-    #userId = serializers.IntegerField(required=False,allow_null=True)
-    class Meta:
-        model = PasswordItems
-        fields = '__all__'
-        read_only_fields = ['user_id']  # Ensure userId is read-only
-
-    def create(self, validated_data):
-        # Assign the userId explicitly from the view
-        validated_data['user_id'] = self.context['request'].user
-        return super().create(validated_data)
-
-
-
 class GroupsSerializer(serializers.ModelSerializer):
+    groupName = serializers.CharField(source= 'group_name')
+    groupId = serializers.CharField(source= 'group_id')
     class Meta:
         model = Groups
-        fields = '__all__'
+        fields = ['groupName', 'groupId', 'user_id']
         read_only_fields = ['user_id']
 
     def create(self, validated_data):
@@ -35,7 +18,23 @@ class GroupsSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class PasswordItemSerializer(serializers.ModelSerializer):
+    parent_lookup_kwargs = {
+        'groups_pk' : 'groups_pk',
+    }
 
+    itemName = serializers.CharField(source= 'item_name')
+    userName= serializers.CharField(source= 'username')
+
+    class Meta:
+        model = PasswordItems
+        fields = ['itemName', 'userName', 'password', 'url', 'comment', 'user_id', 'group_id']
+        read_only_fields = ['user_id']  # Ensure userId is read-only
+
+    def create(self, validated_data):
+        # Assign the userId explicitly from the view
+        validated_data['user_id'] = self.context['request'].user
+        return super().create(validated_data)
 
 class BaseUserSerializer(serializers.ModelSerializer):
     class Meta:
