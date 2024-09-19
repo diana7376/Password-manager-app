@@ -15,31 +15,31 @@ def decrypt_password(password):
     return cipher_suite.decrypt(password.encode()).decode()
 
 class BaseUserManager(BaseUserManager):
-    def create_user(self, user_name, email, password=None):
+    def create_user(self, username, email, password=None):
         if not email:
             raise ValueError('Users must have an email address')
-        if not user_name:
-            raise ValueError('Users must have a user_name')
+        if not username:
+            raise ValueError('Users must have a username')
 
         user = self.model(
             email=self.normalize_email(email),
-            user_name=user_name,
+            username=username,
         )
         user.set_password(password)
         user.save(using=self._db)
         return user
 
-    def get_by_natural_key(self, user_name):
-        return self.get(user_name=user_name)
+    def get_by_natural_key(self, username):
+        return self.get(username=username)
 
 
 class BaseUser(AbstractBaseUser):
-    user_id = models.AutoField(primary_key=True, db_column='UserId')
-    user_name = models.CharField(max_length=100, unique=True, db_column='UserName')
-    email = models.EmailField(unique=True, db_column='Email')
-    password = models.CharField(max_length=100, db_column='Password')
+    user_id = models.AutoField(primary_key=True)
+    username = models.CharField(max_length=100, unique=True)
+    email = models.EmailField(unique=True)
+    password = models.CharField(max_length=100)
 
-    USERNAME_FIELD = 'user_name'
+    USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email']
 
     objects = BaseUserManager()
@@ -48,13 +48,13 @@ class BaseUser(AbstractBaseUser):
         db_table = 'base-users'
 
     def __str__(self):
-        return self.user_name
+        return self.username
 
 
 class Groups(models.Model):
-    group_id = models.AutoField(primary_key=True, db_column='GroupId')
-    user_id = models.ForeignKey(BaseUser, db_column='UserId', on_delete=models.CASCADE, related_name="groups")
-    group_name = models.CharField(max_length=100, db_column='GroupName')
+    group_id = models.AutoField(primary_key=True)
+    user_id = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name="groups")
+    group_name = models.CharField(max_length=100)
     class Meta:
         db_table = 'groups'
 
@@ -64,13 +64,13 @@ class Groups(models.Model):
 
 # Create your models here.
 class PasswordItems(models.Model):
-    group_id = models.ForeignKey(Groups, db_column='GroupId', on_delete=models.CASCADE, null=True)
-    user_id = models.ForeignKey(BaseUser, db_column='UserId', on_delete=models.CASCADE, related_name="passwordItems")
-    item_name = models.CharField(max_length=100, db_column='ItemName')
-    user_name = models.CharField(max_length=100, db_column='UserName')
-    password = models.CharField(max_length=255, db_column='Password')
-    url = models.CharField(max_length=255, null=True, db_column='Url')
-    comment = models.CharField(max_length=255, null=True, db_column='Comment')
+    group_id = models.ForeignKey(Groups, on_delete=models.CASCADE, null=True)
+    user_id = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name="passwordItems")
+    item_name = models.CharField(max_length=100)
+    username = models.CharField(max_length=100)
+    password = models.CharField(max_length=255)
+    url = models.CharField(max_length=255, null=True)
+    comment = models.CharField(max_length=255, null=True)
 
     class Meta:
         db_table = 'password-items'
@@ -107,10 +107,9 @@ class PasswordItems(models.Model):
 
 
 class PasswordHistory(models.Model):
-    # user_id = models.ForeignKey(BaseUser, db_column='user_id', on_delete=models.CASCADE, null=True)
-    pass_id = models.ForeignKey(PasswordItems, db_column='PassId', on_delete=models.CASCADE)
-    old_passwords = models.CharField(max_length=255, db_column='OldPasswords')
-    updated_at = models.DateTimeField(auto_now=True, db_column='UpdatedAt')
+    pass_id = models.ForeignKey(PasswordItems, on_delete=models.CASCADE)
+    old_passwords = models.CharField(max_length=255)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         db_table = 'password-history'
