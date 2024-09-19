@@ -10,12 +10,17 @@ from api.serializers import GroupsSerializer
 class GroupsViewSet(viewsets.ModelViewSet):
     queryset = Groups.objects.all()
     serializer_class = GroupsSerializer
-
+    permission_clas = None
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # Filter the groups by the authenticated user
         return Groups.objects.filter(user_id=self.request.user)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = GroupsSerializer(queryset, many=True)
+        return Response(serializer.data)  # No pagination applied
 
     @action(methods=['get'], detail=False)
     def get_groups(self, request):
