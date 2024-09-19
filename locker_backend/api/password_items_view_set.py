@@ -7,6 +7,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from api.models import PasswordItems, decrypt_password
+from api.mypagination import MyPageNumberPagination
 from api.serializers import PasswordItemSerializer
 from rest_framework.exceptions import ValidationError
 
@@ -14,6 +15,7 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
     queryset = PasswordItems.objects.all()
     serializer_class = PasswordItemSerializer
     permission_classes = [IsAuthenticated]
+    pagination_class = MyPageNumberPagination
 
     def get_queryset(self):
         user = self.request.user
@@ -37,14 +39,22 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         return PasswordItems.objects.filter(user_id=user)
 
     def list(self, request, *args, **kwargs):
-        # Override the list method to return filtered password items
         queryset = self.get_queryset()
-        serializer = PasswordItemSerializer(queryset, many=True)
 
-        # Decrypt passwords before returning the response
-        for item in serializer.data:
-            item['password'] = decrypt_password(item['password'])
+        # Apply pagination
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
 
+            # Decrypt passwords before paginated response
+            for item in serializer.data:
+                item['password'] = decrypt_password(item['password'])
+
+            # Return paginated response
+            return self.get_paginated_response(serializer.data)
+
+        # If pagination is not applied, return all items (this should not happen)
+        serializer = self.get_serializer(queryset, many=True)
         return Response(serializer.data)
 
     @action(detail=False, methods=['get'], url_path='unlisted')
