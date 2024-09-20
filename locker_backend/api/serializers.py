@@ -6,11 +6,11 @@ from .models import PasswordItems, Groups, BaseUser, PasswordHistory
 
 class GroupsSerializer(serializers.ModelSerializer):
     groupName = serializers.CharField(source= 'group_name')
-    groupId = serializers.CharField(source= 'group_id')
+    userId = serializers.PrimaryKeyRelatedField(source= 'user_id', queryset= BaseUser.objects.all(), required= False)
+    groupId = serializers.PrimaryKeyRelatedField(source= 'group_id', queryset= Groups.objects.all(), required= False)
     class Meta:
         model = Groups
-        fields = ['groupName', 'groupId', 'user_id']
-        read_only_fields = ['user_id']
+        fields = ['groupName', 'groupId', 'userId']
 
     def create(self, validated_data):
         # Assign the userId explicitly from the view
@@ -25,11 +25,11 @@ class PasswordItemSerializer(serializers.ModelSerializer):
 
     itemName = serializers.CharField(source= 'item_name')
     userName= serializers.CharField(source= 'username')
-
+    groupId = serializers.PrimaryKeyRelatedField(source='group_id', queryset=Groups.objects.all())
+    userId = serializers.PrimaryKeyRelatedField(source= 'user_id', queryset= BaseUser.objects.all(), required= False)
     class Meta:
         model = PasswordItems
-        fields = ['itemName', 'userName', 'password', 'url', 'comment', 'user_id', 'group_id']
-        read_only_fields = ['user_id']  # Ensure userId is read-only
+        fields = ['id', 'itemName', 'userName', 'password', 'url', 'comment', 'userId', 'groupId']
 
     def create(self, validated_data):
         # Assign the userId explicitly from the view
@@ -93,8 +93,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class PasswordHistorySerializer(serializers.ModelSerializer):
-    updated_at = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S")
 
+    passId = serializers.PrimaryKeyRelatedField(source= 'pass_id', queryset= PasswordItems.objects.all())
+    oldPasswords = serializers.CharField(source='old_passwords')
+    updatedAt = serializers.DateTimeField(source='updated_at', format="%d-%m-%Y %H:%M:%S")
     class Meta:
         model = PasswordHistory
-        fields = '__all__'
+        fields = ['id', 'oldPasswords', 'updatedAt', 'passId']
