@@ -84,11 +84,11 @@ WSGI_APPLICATION = 'locker_backend.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'test',
-        'USER': 'root',
-        'PASSWORD': '+c6A8kd$25',
-        'HOST': 'localhost',
-        'PORT': '3306'
+        'NAME': 'defaultdb',
+        'USER': 'avnadmin',
+        'PASSWORD': 'AVNS_lO2rymWEMenFC0WURgB',
+        'HOST': 'mysql-1687e190-maxcraftmd.g.aivencloud.com',
+        'PORT': '18541'
     }
 }
 

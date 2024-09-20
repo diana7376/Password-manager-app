@@ -6,15 +6,17 @@ from .models import PasswordItems, Groups, BaseUser, PasswordHistory
 
 class GroupsSerializer(serializers.ModelSerializer):
     groupName = serializers.CharField(source= 'group_name')
-    groupId = serializers.CharField(source= 'group_id')
+    groupId = serializers.IntegerField(source= 'group_id', read_only=True)
+    userId = serializers.PrimaryKeyRelatedField(source='user', read_only=True)
+
     class Meta:
         model = Groups
-        fields = ['groupName', 'groupId', 'user_id']
-        read_only_fields = ['user_id']
+        fields = ['groupId', 'groupName', 'userId']
+        read_only_fields = ['userId']
 
     def create(self, validated_data):
         # Assign the userId explicitly from the view
-        validated_data['user_id'] = self.context['request'].user
+        validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
 
 
@@ -25,16 +27,21 @@ class PasswordItemSerializer(serializers.ModelSerializer):
 
     itemName = serializers.CharField(source= 'item_name')
     userName= serializers.CharField(source= 'username')
+    groupId = serializers.PrimaryKeyRelatedField(source= 'group', queryset=Groups.objects.all(), required=False)
+    passId = serializers.IntegerField(source= 'id', read_only=True)
+    userId = serializers.PrimaryKeyRelatedField(source='user', read_only=True)
 
     class Meta:
         model = PasswordItems
-        fields = ['itemName', 'userName', 'password', 'url', 'comment', 'user_id', 'group_id']
-        read_only_fields = ['user_id']  # Ensure userId is read-only
+        fields = ['passId','itemName', 'userName', 'password', 'url', 'comment', 'groupId', 'userId']
+        read_only_fields = ['userId']  # Ensure userId is read-only
 
     def create(self, validated_data):
         # Assign the userId explicitly from the view
-        validated_data['user_id'] = self.context['request'].user
+        validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+
+
 
 class BaseUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -93,8 +100,11 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 
 class PasswordHistorySerializer(serializers.ModelSerializer):
-    updated_at = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S")
+
+    oldPassword = serializers.CharField(source= 'old_passwords')
+    updatedAt = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S", source='updated_at')
+    passId = serializers.PrimaryKeyRelatedField(source='pass_id', read_only=True)
 
     class Meta:
         model = PasswordHistory
-        fields = '__all__'
+        fields = ['id', 'oldPassword', 'updatedAt', 'passId']
