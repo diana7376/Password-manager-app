@@ -36,10 +36,23 @@ class PasswordItemSerializer(serializers.ModelSerializer):
         fields = ['passId','itemName', 'userName', 'password', 'url', 'comment', 'groupId', 'userId']
         read_only_fields = ['userId']  # Ensure userId is read-only
 
+    def validate(self, attrs):
+        user = self.context['request'].user
+        group = attrs.get('group')
+
+        # Check if the group belongs to the user
+        if group and group.user != user:
+            raise serializers.ValidationError("You do not have permission to add or update this password item in this group.")
+
+        return attrs
+
     def create(self, validated_data):
-        # Assign the userId explicitly from the view
         validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+
+    def update(self, instance, validated_data):
+        validated_data['user'] = self.context['request'].user
+        return super().update(instance, validated_data)
 
 
 
