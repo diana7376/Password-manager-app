@@ -6,15 +6,17 @@ from .models import PasswordItems, Groups, BaseUser, PasswordHistory
 
 class GroupsSerializer(serializers.ModelSerializer):
     groupName = serializers.CharField(source= 'group_name')
-    userId = serializers.PrimaryKeyRelatedField(source= 'user_id', queryset= BaseUser.objects.all(), required= False)
-    groupId = serializers.PrimaryKeyRelatedField(source= 'group_id', queryset= Groups.objects.all(), required= False)
+    groupId = serializers.IntegerField(source= 'group_id', read_only=True)
+    userId = serializers.PrimaryKeyRelatedField(source='user', read_only=True)
+
     class Meta:
         model = Groups
-        fields = ['groupName', 'groupId', 'userId']
+        fields = ['groupId', 'groupName', 'userId']
+        read_only_fields = ['userId']
 
     def create(self, validated_data):
         # Assign the userId explicitly from the view
-        validated_data['user_id'] = self.context['request'].user
+        validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
 
 
@@ -25,16 +27,21 @@ class PasswordItemSerializer(serializers.ModelSerializer):
 
     itemName = serializers.CharField(source= 'item_name')
     userName= serializers.CharField(source= 'username')
-    groupId = serializers.PrimaryKeyRelatedField(source='group_id', queryset=Groups.objects.all())
-    userId = serializers.PrimaryKeyRelatedField(source= 'user_id', queryset= BaseUser.objects.all(), required= False)
+    groupId = serializers.PrimaryKeyRelatedField(source= 'group', queryset=Groups.objects.all(), required=False)
+    passId = serializers.IntegerField(source= 'id', read_only=True)
+    userId = serializers.PrimaryKeyRelatedField(source='user', read_only=True)
+
     class Meta:
         model = PasswordItems
-        fields = ['id', 'itemName', 'userName', 'password', 'url', 'comment', 'userId', 'groupId']
+        fields = ['passId','itemName', 'userName', 'password', 'url', 'comment', 'groupId', 'userId']
+        read_only_fields = ['userId']  # Ensure userId is read-only
 
     def create(self, validated_data):
         # Assign the userId explicitly from the view
-        validated_data['user_id'] = self.context['request'].user
+        validated_data['user'] = self.context['request'].user
         return super().create(validated_data)
+
+
 
 class BaseUserSerializer(serializers.ModelSerializer):
     class Meta:
@@ -94,9 +101,10 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class PasswordHistorySerializer(serializers.ModelSerializer):
 
-    passId = serializers.PrimaryKeyRelatedField(source= 'pass_id', queryset= PasswordItems.objects.all())
-    oldPasswords = serializers.CharField(source='old_passwords')
-    updatedAt = serializers.DateTimeField(source='updated_at', format="%d-%m-%Y %H:%M:%S")
+    oldPassword = serializers.CharField(source= 'old_passwords')
+    updatedAt = serializers.DateTimeField(format="%d-%m-%Y %H:%M:%S", source='updated_at')
+    passId = serializers.PrimaryKeyRelatedField(source='pass_id', read_only=True)
+
     class Meta:
         model = PasswordHistory
-        fields = ['id', 'oldPasswords', 'updatedAt', 'passId']
+        fields = ['id', 'oldPassword', 'updatedAt', 'passId']

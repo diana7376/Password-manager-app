@@ -53,7 +53,7 @@ class BaseUser(AbstractBaseUser):
 
 class Groups(models.Model):
     group_id = models.AutoField(primary_key=True)
-    user_id = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name="groups")
+    user = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name="groups")
     group_name = models.CharField(max_length=100)
     class Meta:
         db_table = 'groups'
@@ -64,8 +64,8 @@ class Groups(models.Model):
 
 # Create your models here.
 class PasswordItems(models.Model):
-    group_id = models.ForeignKey(Groups, on_delete=models.CASCADE, null=True)
-    user_id = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name="passwordItems")
+    group = models.ForeignKey(Groups, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name="passwordItems")
     item_name = models.CharField(max_length=100)
     username = models.CharField(max_length=100)
     password = models.CharField(max_length=255)
@@ -107,7 +107,7 @@ class PasswordItems(models.Model):
 
 
 class PasswordHistory(models.Model):
-    pass_id = models.ForeignKey(PasswordItems, on_delete=models.CASCADE)
+    pass_id = models.ForeignKey(PasswordItems, on_delete=models.CASCADE, db_column='pass_id')
     old_passwords = models.CharField(max_length=255)
     updated_at = models.DateTimeField(auto_now=True)
 

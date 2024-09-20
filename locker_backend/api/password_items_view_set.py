@@ -82,7 +82,8 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=True)
     def get_specific_password_items(self, request, pk=None, groups_pk=None):
-        queryset = PasswordItems.objects.filter(pk=pk, group_id=groups_pk)
+        user = request.user
+        queryset = PasswordItems.objects.filter(pk=pk, group_id=groups_pk, user_id=user)
         password_item = get_object_or_404(queryset, pk=pk)
         serializer = PasswordItemSerializer(password_item)
 
@@ -92,12 +93,30 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
 
         return Response(password_item_data)
 
-    def retrieve(self, request, pk=None, groups_pk=None):
-        # Adjust the queryset to filter by group_id if groups_pk is provided
-        if groups_pk:
-            password_item = get_object_or_404(self.queryset.filter(group_id=groups_pk), pk=pk)
+    def retrieve(self, request, *args, **kwargs):
+        user = request.user
+        groups_pk = self.kwargs.get('groups_pk')
+
+        # Initialize an empty queryset to hold combined results
+        queryset = self.queryset.filter(user_id=user)
+
+        # If 'null' is provided as group_id, filter items with group_id=None
+        if groups_pk == 'null':
+            null_group_items = queryset.filter(group_id__isnull=True)
         else:
-            password_item = get_object_or_404(self.queryset, pk=pk)
+            null_group_items = queryset.none()  # No null group items if an actual group is provided
+
+        # If a valid group_id is provided, filter those as well
+        if groups_pk and groups_pk != 'null':
+            group_items = queryset.filter(group_id=groups_pk)
+        else:
+            group_items = queryset.none()  # No group items for 'null'
+
+        # Combine the querysets
+        password_items = null_group_items | group_items
+
+        # Fetch the item by pk within the combined queryset
+        password_item = get_object_or_404(password_items, pk=kwargs.get('pk'))
 
         serializer = PasswordItemSerializer(password_item)
 
@@ -109,15 +128,16 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
 
     @action(methods=['put'], detail=True)
     def put_password_items(self, request, pk=None, groups_pk=None):
+        user = request.user
         # Check if 'groups_pk' is a string 'null' and treat it as None
         if groups_pk == 'null':
             groups_pk = None
 
-        # Allow group_id to be None
+        # Allow group_id to be None, but ensure the password belongs to the user
         if groups_pk is None:
-            queryset = PasswordItems.objects.filter(pk=pk, group_id__isnull=True)
+            queryset = PasswordItems.objects.filter(pk=pk, group_id__isnull=True, user_id=user)
         else:
-            queryset = PasswordItems.objects.filter(pk=pk, group_id=groups_pk)
+            queryset = PasswordItems.objects.filter(pk=pk, group_id=groups_pk, user_id=user)
 
         password_items = get_object_or_404(queryset, pk=pk)
 
@@ -133,11 +153,12 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
 
     @action(methods=['delete'], detail=True)
     def delete_password_items(self, request, pk=None, groups_pk=None):
-        # Allow deletion without a specific group_id
+        user = request.user
+        # Allow deletion without a specific group_id, but ensure the password belongs to the user
         if groups_pk is None:
-            queryset = PasswordItems.objects.filter(pk=pk, group_id__isnull=True)
+            queryset = PasswordItems.objects.filter(pk=pk, group_id__isnull=True, user_id=user)
         else:
-            queryset = PasswordItems.objects.filter(pk=pk, group_id=groups_pk)
+            queryset = PasswordItems.objects.filter(pk=pk, group_id=groups_pk, user_id=user)
 
         password_items = get_object_or_404(queryset, pk=pk)
         password_items.delete()

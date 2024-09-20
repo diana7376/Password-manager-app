@@ -33,9 +33,9 @@ class PasswordHistoryViewSet(viewsets.ModelViewSet):
             data = serializer.data
             for item in data:
                 try:
-                    item['oldPasswords'] = decrypt_password(item['oldPasswords'])
+                    item['oldPassword'] = decrypt_password(item['oldPassword'])
                 except Exception:
-                    item['oldPasswords'] = "Error decrypting password"
+                    item['oldPassword'] = "Error decrypting password"
 
             # Return paginated response
             return self.get_paginated_response(data)
@@ -47,8 +47,8 @@ class PasswordHistoryViewSet(viewsets.ModelViewSet):
         data = serializer.data
         for item in data:
             try:
-                item['old_passwords'] = decrypt_password(item['old_passwords'])
+                item['oldPassword'] = decrypt_password(item['oldPassword'])
             except Exception:
-                item['old_passwords'] = "Error decrypting password"
+                item['oldPassword'] = "Error decrypting password"
 
         return Response(data)
