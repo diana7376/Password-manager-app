@@ -62,6 +62,15 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         # Filter for password items where group_id is null
         user = self.request.user
         queryset = PasswordItems.objects.filter(user_id=user, group_id__isnull=True)
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = PasswordItemSerializer(page, many=True)
+
+            for item in serializer.data:
+                item['password'] = decrypt_password(item['password'])
+            return self.get_paginated_response(serializer.data)
+
         serializer = PasswordItemSerializer(queryset, many=True)
 
         # Decrypt passwords before returning the response
@@ -97,26 +106,20 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         user = request.user
         groups_pk = self.kwargs.get('groups_pk')
 
-        # Initialize an empty queryset to hold combined results
-        queryset = self.queryset.filter(user_id=user)
-
-        # If 'null' is provided as group_id, filter items with group_id=None
+        # Handle the case where groups_pk is 'null' (string 'null' needs to be treated as None)
         if groups_pk == 'null':
-            null_group_items = queryset.filter(group_id__isnull=True)
+            groups_pk = None
+
+        # Query for password items with a null or specific group
+        if groups_pk is None:
+            # Handle null group_id case
+            queryset = PasswordItems.objects.filter(user_id=user, group_id__isnull=True)
         else:
-            null_group_items = queryset.none()  # No null group items if an actual group is provided
+            # Handle specific group_id case
+            queryset = PasswordItems.objects.filter(user_id=user, group_id=groups_pk)
 
-        # If a valid group_id is provided, filter those as well
-        if groups_pk and groups_pk != 'null':
-            group_items = queryset.filter(group_id=groups_pk)
-        else:
-            group_items = queryset.none()  # No group items for 'null'
-
-        # Combine the querysets
-        password_items = null_group_items | group_items
-
-        # Fetch the item by pk within the combined queryset
-        password_item = get_object_or_404(password_items, pk=kwargs.get('pk'))
+        # Fetch the password item by its primary key within the filtered queryset
+        password_item = get_object_or_404(queryset, pk=kwargs.get('pk'))
 
         serializer = PasswordItemSerializer(password_item)
 

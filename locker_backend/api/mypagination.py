@@ -7,7 +7,7 @@ class MyPageNumberPagination(PageNumberPagination):
     max_page_size = 10  # Optional limit for maximum page size
     def get_paginated_response(self, data):
         return Response({
-            'Password_items_count' : self.page.paginatror.count,
+            'password_items_count' : self.page.paginator.count,
             'next_page' : self.get_next_link(),
             'previous_page' : self.get_previous_link(),
             'passwords' : data,
