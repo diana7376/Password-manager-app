@@ -2,7 +2,7 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import PasswordItems, Groups, BaseUser, PasswordHistory
+from api.models import PasswordItems, Groups, BaseUser, PasswordHistory
 
 class GroupsSerializer(serializers.ModelSerializer):
     groupName = serializers.CharField(source= 'group_name')

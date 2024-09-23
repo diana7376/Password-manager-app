@@ -6,10 +6,12 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from api.models import PasswordItems, decrypt_password
+from api.models.encryption import decrypt_password
 from api.mypagination import MyPageNumberPagination
 from api.serializers import PasswordItemSerializer
 from rest_framework.exceptions import ValidationError
+from api.models import PasswordItems
+
 
 class PasswordItemsViewSet(viewsets.ModelViewSet):
     queryset = PasswordItems.objects.all()

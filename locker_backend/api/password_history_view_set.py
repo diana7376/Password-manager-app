@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.permissions import IsAuthenticated
-from api.models import PasswordHistory, decrypt_password
+from api.models import PasswordHistory
+from api.models.encryption import decrypt_password
 from api.mypagination import MyPageNumberPagination
 from api.serializers import PasswordHistorySerializer
 from rest_framework.response import Response
