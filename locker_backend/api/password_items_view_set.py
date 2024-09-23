@@ -11,7 +11,7 @@ from api.mypagination import MyPageNumberPagination
 from api.serializers import PasswordItemSerializer
 from rest_framework.exceptions import ValidationError
 from api.models import PasswordItems
-
+from django.db.models import Q
 
 class PasswordItemsViewSet(viewsets.ModelViewSet):
     queryset = PasswordItems.objects.all()
@@ -23,22 +23,31 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         group_id = self.kwargs.get('groups_pk')
 
-        # Check if the request method is PUT or DELETE
+        # Start with a base queryset filtering by user
+        queryset = PasswordItems.objects.filter(user_id=user)
+
+        # Handle filtering by group_id for PUT, DELETE, GET requests
+        if group_id == 'null':
+            group_id = None
+
         if self.request.method in ['PUT', 'DELETE']:
-            # Convert 'null' to None for PUT and DELETE requests
-            if group_id == 'null':
-                group_id = None
-
-            # For PUT and DELETE, filter by group_id, allowing for group_id to be None
             if group_id is None:
-                return PasswordItems.objects.filter(user_id=user, group_id__isnull=True)
-            return PasswordItems.objects.filter(user_id=user, group_id=group_id)
+                queryset = queryset.filter(group_id__isnull=True)
+            else:
+                queryset = queryset.filter(group_id=group_id)
+        elif group_id:
+            queryset = queryset.filter(group_id=group_id)
 
-        # For GET and POST requests, use the original behavior
-        if group_id:
-            return PasswordItems.objects.filter(group_id=group_id)
+        # Apply search filter after the base queryset logic
+        search = self.request.query_params.get('search', None)
+        if search:
+            queryset = queryset.filter(
+                Q(item_name__icontains=search) |
+                Q(username__icontains=search) |
+                Q(url__icontains=search)
+            )
 
-        return PasswordItems.objects.filter(user_id=user)
+        return queryset
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
