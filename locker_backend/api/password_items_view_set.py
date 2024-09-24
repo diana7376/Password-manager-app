@@ -21,20 +21,15 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        group_id = self.kwargs.get('groups_pk')
+        group_id = self.kwargs.get('groups_pk', None)  # Get the group_id from the URL parameters
 
         # Start with a base queryset filtering by user
         queryset = PasswordItems.objects.filter(user_id=user)
 
-        # Handle filtering by group_id for PUT, DELETE, GET requests
+        # Handle the case for null group_id (group_id == None)
         if group_id == 'null':
-            group_id = None
-
-        if self.request.method in ['PUT', 'DELETE']:
-            if group_id is None:
-                queryset = queryset.filter(group_id__isnull=True)
-            else:
-                queryset = queryset.filter(group_id=group_id)
+            queryset = queryset.filter(group_id__isnull=True)
+        # Handle the case for a specific group_id
         elif group_id:
             queryset = queryset.filter(group_id=group_id)
 
@@ -44,7 +39,8 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(
                 Q(item_name__icontains=search) |
                 Q(username__icontains=search) |
-                Q(url__icontains=search)
+                Q(url__icontains=search) |
+                Q(comment__icontains=search)
             )
 
         return queryset

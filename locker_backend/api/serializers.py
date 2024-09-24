@@ -51,6 +51,9 @@ class PasswordItemSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
+        if 'group' not in validated_data:
+            validated_data['group'] = None
+
         validated_data['user'] = self.context['request'].user
         return super().update(instance, validated_data)
 
