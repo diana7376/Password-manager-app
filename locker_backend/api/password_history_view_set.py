@@ -16,7 +16,7 @@ class PasswordHistoryViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        return self.queryset.filter(pass_id__user_id=user)  # Filter by user
+        return self.queryset.filter(pass_id__user_id=user).order_by('-id')  # Filter by user
 
     def retrieve(self, request, *args, **kwargs):
         pass_id = kwargs.get('pass_id')

@@ -43,7 +43,7 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
                 Q(comment__icontains=search)
             )
 
-        return queryset
+        return queryset.order_by('-id')
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
