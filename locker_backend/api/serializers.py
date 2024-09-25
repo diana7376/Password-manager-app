@@ -47,7 +47,13 @@ class PasswordItemSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
+        user = self.context['request'].user
+        item_name = validated_data['item_name']
+
+        if PasswordItems.objects.filter(user= user, item_name= item_name):
+            raise serializers.ValidationError({'item_name' : 'A PasswordItem with this name already exists.'})
+
+        validated_data['user'] = user
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
