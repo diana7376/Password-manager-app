@@ -10,7 +10,7 @@
 - **New Feature Ideas**:
     - **Group Passwords**: We are thinking about adding shared passwords for group accounts, so teams can use one login to access shared info.
     - **Custom User Roles**: Started planning for user roles, allowing admins to set up different access levels for team members.
-    - **Dark mode:** We started implementing the design for the black mode of our application.
+    - **Dark mode:** We started implementing the design for the dark mode of our application.
     - **Forgot password**: We found the need to add a forgot password feature, in case the user forgets the password for our app.
 - Looked into using external servers for secure features, especially one-time passwords (OTPs) for safer logins.
 - Started research on how to make the front-end more readable, looked up how to reuse different elements that repeat on the app, how to improve modularity, readability and ease of use.
