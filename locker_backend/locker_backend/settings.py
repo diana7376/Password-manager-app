@@ -13,6 +13,11 @@ from datetime import timedelta
 from pathlib import Path
 import os
 import logging
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
+
 logger = logging.getLogger(__name__)
 
 logger.info("Starting the Django app...")
@@ -21,8 +26,8 @@ logger.info("Starting the Django app...")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-STATIC_URL = 'static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+# This is the directory where collected static files will be stored
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -64,6 +69,7 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'locker_backend.middleware.CheckFrontendRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'locker_backend.urls'
@@ -71,8 +77,9 @@ ROOT_URLCONF = 'locker_backend.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'templates']
-        ,
+        'DIRS': [
+            BASE_DIR / 'static' / 'build',  # Pointing to the folder containing index.html
+        ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,6 +91,8 @@ TEMPLATES = [
         },
     },
 ]
+
+
 
 WSGI_APPLICATION = 'locker_backend.wsgi.application'
 
@@ -170,14 +179,22 @@ USE_TZ = False
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
-STATIC_URL = 'static/'
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static' / 'build' / 'static',  # Path to React's static files (JS, CSS)
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ORIGIN_ALLOW_ALL = True
+
+CORS_ALLOWED_ORIGINS = [
+    "http://127.0.0.1:8000",  # Your local frontend origin
+    "https://petite-danella-lockr-b5f8b6cb.koyeb.app",  # Your backend domain
+]
 
 NO_UPDATE_LAST_LOGIN = True
 
@@ -201,4 +218,5 @@ REST_FRAMEWORK = {
 CORS_ALLOW_HEADERS = [
     'authorization',
     'content-type',
+    'X-Requested-By',
 ]
