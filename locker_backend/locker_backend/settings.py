@@ -26,8 +26,14 @@ logger.info("Starting the Django app...")
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+
 # This is the directory where collected static files will be stored
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / 'static' / 'build' / 'static',  # Path to React's static files (JS, CSS)
+]
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
@@ -36,7 +42,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'default-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
@@ -70,6 +76,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'locker_backend.middleware.CheckFrontendRequestMiddleware',
+
 ]
 
 ROOT_URLCONF = 'locker_backend.urls'
@@ -180,10 +187,7 @@ USE_TZ = False
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 
-STATIC_URL = '/static/'
-STATICFILES_DIRS = [
-    BASE_DIR / 'static' / 'build' / 'static',  # Path to React's static files (JS, CSS)
-]
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -195,6 +199,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://127.0.0.1:8000",  # Your local frontend origin
     "https://petite-danella-lockr-b5f8b6cb.koyeb.app",  # Your backend domain
 ]
+
 
 NO_UPDATE_LAST_LOGIN = True
 
@@ -219,4 +224,6 @@ CORS_ALLOW_HEADERS = [
     'authorization',
     'content-type',
     'X-Requested-By',
+
 ]
+

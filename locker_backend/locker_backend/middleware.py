@@ -8,6 +8,8 @@ class CheckFrontendRequestMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
+        if request.path.startswith('/api/health'):
+            return self.get_response(request)
         # Check if the request contains the custom header 'X-Requested-By' with value 'frontend'
         if request.path.startswith('/api/') and request.headers.get('X-Requested-By') != 'frontend':
             return JsonResponse({'error': 'Forbidden'}, status=403)  # Block access
@@ -15,3 +17,4 @@ class CheckFrontendRequestMiddleware:
         # Proceed with the request if the header is valid
         response = self.get_response(request)
         return response
+
