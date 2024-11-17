@@ -27,6 +27,6 @@ Don't forget to check out both the [Backend](https://github.com/diana7376/Passwo
 - Looked into using external servers for secure features, especially one-time passwords (OTPs) for safer logins.  
 - Started research on how to make the front-end more readable, looked up how to reuse different elements that repeat on the app, how to improve modularity, readability and ease of use.  
 - **Front-End Refactor (TBA)**: Planning a complete overhaul of the front-end code to improve structure and readability.  
-- **Report improvements:**  
-    - **Abstract and introduction**: We updated the texts for the introduction as well as the abstract of our report.  
+- **Report improvements**: [Report link](https://www.overleaf.com/project/66f295b42270ce28a2e84659)
+    - **Abstract and introduction**: We updated the texts for the introduction as well as the abstract of our report.
     - **Text improvement**: We formatted the text of the report, took out words in bold inside the text, commented the diagrams and updated their placement on the page.
