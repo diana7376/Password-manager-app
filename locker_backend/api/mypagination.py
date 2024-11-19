@@ -1,5 +1,6 @@
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
+from django.conf import settings
 
 from urllib.parse import urlparse, urlunparse
 
@@ -12,7 +13,7 @@ class MyPageNumberPagination(PageNumberPagination):
         link = super().get_next_link()
         if link:
             parsed_url = urlparse(link)
-            if parsed_url.scheme == 'http':
+            if getattr(settings, 'CORS_ALLOWED_ORIGINS', []) == ["http://localhost:3000"]:
                 link = urlunparse(parsed_url._replace(scheme='https'))
         return link
 
