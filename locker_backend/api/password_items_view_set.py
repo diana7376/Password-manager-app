@@ -6,30 +6,33 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from api.models.encryption import decrypt_password
-from api.mypagination import MyPageNumberPagination
-from api.serializers import PasswordItemSerializer
+
+from .is_group_owner_or_read_only import IsGroupOwnerOrReadOnly
+from .models.encryption import decrypt_password
+from .mypagination import MyPageNumberPagination
+from .serializers import PasswordItemSerializer
 from rest_framework.exceptions import ValidationError
-from api.models import PasswordItems
+from .models import PasswordItems
 from django.db.models import Q
 
 class PasswordItemsViewSet(viewsets.ModelViewSet):
     queryset = PasswordItems.objects.all()
     serializer_class = PasswordItemSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated ,IsGroupOwnerOrReadOnly]
     pagination_class = MyPageNumberPagination
 
     def get_queryset(self):
         user = self.request.user
         group_id = self.kwargs.get('groups_pk', None)  # Get the group_id from the URL parameters
 
-        # Start with a base queryset filtering by user
-        queryset = PasswordItems.objects.filter(user_id=user)
+        # Filter password items for groups where the user is either the owner or an invited member
+        queryset = PasswordItems.objects.filter(
+            Q(group__user=user) | Q(group__invited_members=user)
+        )
 
         # Handle the case for null group_id (group_id == None)
         if group_id == 'null':
             queryset = queryset.filter(group_id__isnull=True)
-        # Handle the case for a specific group_id
         elif group_id:
             queryset = queryset.filter(group_id=group_id)
 

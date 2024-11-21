@@ -14,7 +14,7 @@ router.register(r'password-items', PasswordItemsViewSet, basename='password-item
 router.register(r'password-history', PasswordHistoryViewSet, basename='password-history')
 
 pass_router = routers.NestedSimpleRouter(router, r'groups', lookup='groups')
-pass_router.register(r'password-items', PasswordItemsViewSet, basename='groups-password-item')
+pass_router.register(r'password-items', PasswordItemsViewSet, basename='groups-password-items')
 
 urlpatterns = [
     path(r'', include(router.urls)),

@@ -5,7 +5,12 @@ from rest_framework.exceptions import ValidationError
 class Groups(models.Model):
     group_id = models.AutoField(primary_key=True)
     user = models.ForeignKey(BaseUser, on_delete=models.CASCADE, related_name="groups")
-    group_name = models.CharField(max_length=100, unique= True)
+    group_name = models.CharField(max_length=100, unique=True)
+    invited_members = models.ManyToManyField(
+        BaseUser,
+        related_name='shared_groups',
+        blank=True,
+    )
 
     class Meta:
         db_table = 'groups'
