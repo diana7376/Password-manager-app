@@ -18,7 +18,7 @@ class GroupsViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         user = self.request.user
         # Filter the groups by the authenticated user
-        return Groups.objects.filter(Q(user=user) | Q(invited_members=user))
+        return Groups.objects.filter(Q(user=user) | Q(invited_members=user)).distinct()
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
@@ -68,6 +68,30 @@ class GroupsViewSet(viewsets.ModelViewSet):
         # Add the user to the group's invited members
         group.invited_members.add(invited_user)
         return Response({'message': f'User {username_to_invite} has been successfully invited to the group.'})
+
+    @action(methods=['post'], detail=True, url_path='remove')
+    def remove_user(self, request, pk=None):
+        group = self.get_object()
+        current_user = request.user
+
+        if group.user != current_user:
+            raise ValidationError('You do not have permission to remove users from this group.')
+
+        username_to_remove = request.data.get('username')
+        if not username_to_remove:
+            raise ValidationError('No username provided.')
+
+        try:
+            user_to_remove = BaseUser.objects.get(username=username_to_remove)
+        except BaseUser.DoesNotExist:
+            raise ValidationError('The user does not exist.')
+
+        if not group.invited_members.filter(user_id=user_to_remove.user_id).exists():
+            raise ValidationError('This user is not invited to the group.')
+
+        group.invited_members.remove(user_to_remove)
+        return Response({'message': f'User {username_to_remove} has been successfully removed from the group.'})
+
 
     @action(methods=['get'], detail=True)
     def get_specific_groups(self, request, pk=None):
