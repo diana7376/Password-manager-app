@@ -16,6 +16,7 @@ class PasswordItems(models.Model):
     password = models.CharField(max_length=255)
     url = models.CharField(max_length=255, null=True)
     comment = models.CharField(max_length=255, null=True)
+    otp_key = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         db_table = 'password-items'
@@ -41,4 +42,12 @@ class PasswordItems(models.Model):
                 )
 
         self.password = encrypt_password(self.password)
+        # Encrypt the OTP key before saving
+        if self.otp_key:
+            self.otp_key = encrypt_password(self.otp_key)
         super(PasswordItems, self).save(*args, **kwargs)
+
+    def get_decrypted_otp_key(self):
+        # Decrypt the OTP key if it exists
+        return decrypt_password(self.otp_key) if self.otp_key else None
+
