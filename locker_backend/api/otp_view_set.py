@@ -22,7 +22,7 @@ class PasswordItemsOTPViewSet(viewsets.ViewSet):
             return Response({'responseKey': 'Secret key is required'}, status=status.HTTP_400_BAD_REQUEST)
 
         password_item.otp_key = otp_key
-        password_item.save()
+        password_item.save_otp_key()
         return Response({'responseKey': 'OTP key updated successfully'}, status=status.HTTP_200_OK)
 
     @action(methods=['get'], detail=True, url_path='generate-otp')
