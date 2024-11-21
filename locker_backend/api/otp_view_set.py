@@ -61,3 +61,17 @@ class PasswordItemsOTPViewSet(viewsets.ViewSet):
         except Exception as e:
             # If there's any error during decryption or OTP generation, log it and return a response
             return Response({'responseKey': f'Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @action(methods=['delete'], detail=True, url_path='delete-otp')
+    def delete_otp_key(self, request, pk=None):
+        # Retrieve the password item
+        password_item = get_object_or_404(PasswordItems, pk=pk, user=request.user)
+
+        if not password_item.otp_key:
+            return Response({'responseKey': 'No OTP key to delete for this item'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Remove the OTP key
+        password_item.otp_key = None
+        password_item.save_otp_key()  # Call save_otp_key() to save the updated object
+
+        return Response({'responseKey': 'OTP key deleted successfully'}, status=status.HTTP_200_OK)

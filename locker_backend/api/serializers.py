@@ -62,15 +62,19 @@ class PasswordItemSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if 'group' not in validated_data:
             validated_data['group'] = None
-
+        if 'otp_key' in validated_data:
+            # Discard the new otp_key from validated data to avoid changing it
+            validated_data.pop('otp_key')
         validated_data['user'] = self.context['request'].user
         return super().update(instance, validated_data)
 
     def to_representation(self, instance):
         # Return decrypted otp_key for representation (if needed)
         ret = super().to_representation(instance)
-        if instance.otp_key:
-            ret['otp_key'] = decrypt_password(instance.otp_key)
+        if 'otpKey' in ret:
+            del ret['otpKey']
+        # if instance.otp_key:
+        #     ret['otp_key'] = decrypt_password(instance.otp_key)
         return ret
 
 
