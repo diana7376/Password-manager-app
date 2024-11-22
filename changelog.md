@@ -3,6 +3,7 @@
 ## November 8 - 22, 2024
 **Enhancements** to Group Management and Sharing Functionality
 We’ve added exciting new features to make password sharing easier and more secure than ever. Now, you can:
+
 **1. Invite Users to Groups:**
   - Easily invite others to your groups by entering their **username** or **email**.
 **2. Seamless Sharing of Group Passwords:**
