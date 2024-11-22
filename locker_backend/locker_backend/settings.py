@@ -42,8 +42,14 @@ STATICFILES_DIRS = [
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'default-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'your-email@gmail.com'
+EMAIL_HOST_PASSWORD = 'your-email-password'
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
@@ -63,7 +69,7 @@ INSTALLED_APPS = [
     'corsheaders',
     #'rest_framework_simplejwt.token_blacklist',
     'nolastlogin',
-
+    'django_extensions'
 ]
 
 MIDDLEWARE = [

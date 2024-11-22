@@ -2,8 +2,11 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+
+from .models.invitation import Invitation
 from api.models import PasswordItems, Groups, BaseUser, PasswordHistory
 from api.models.encryption import decrypt_password
+
 
 
 class GroupsSerializer(serializers.ModelSerializer):
@@ -140,3 +143,10 @@ class PasswordHistorySerializer(serializers.ModelSerializer):
     class Meta:
         model = PasswordHistory
         fields = ['id', 'oldPassword', 'updatedAt', 'passId']
+
+class InvitationSerializer(serializers.ModelSerializer):
+    group_name = serializers.CharField(source='group.group_name')
+
+    class Meta:
+        model = Invitation
+        fields = ['id', 'group_name', 'created_at']
