@@ -1,6 +1,81 @@
 # Changelog - LockR  
 ****
 ## November 8 - 22, 2024
+## Changelog: Forgot Passwords Implementation
+![image](https://github.com/user-attachments/assets/d09c7209-753d-4055-9132-2e1a21fdcb9f)
+![image](https://github.com/user-attachments/assets/26cc9fe4-860e-42c3-9472-4ce450210f14)
+
+### Backend Changes
+- **New API Endpoint:**
+  - Added `PasswordResetRequestView` in the Django backend to handle password reset requests.
+  - Generates a unique UID and token for secure password reset links.
+  - Sends a password reset link via email to the user-provided email address if it exists in the system.
+
+- **Email Service Integration:**
+  - Integrated SendGrid as the email service provider for sending password reset emails.
+  - Configured the Django email backend to use `smtp.sendgrid.net` with TLS encryption on port 587.
+  - Default "From" email address set to `wexow66243@kazvi.com`.
+ 
+    ![image](https://github.com/user-attachments/assets/c09a9a38-f264-4995-b27e-84c094272823)
+
+
+- **Security Enhancements:**
+  - Used `django.contrib.auth.tokens.default_token_generator` for secure token generation.
+  - Ensured tokens are time-sensitive to prevent misuse.
+  - Implemented environment-based configuration for sensitive credentials (`SENDGRID_API_KEY`).
+  - Removed hardcoded SendGrid API key from `settings.py` by utilizing `.env` file and `python-dotenv` library for secure storage.
+  - Prevented `.env` file from being pushed to version control by adding it to `.gitignore`.
+
+- **Error Handling:**
+  - Logged errors during the email-sending process for better debugging (`logger.error`).
+  - Added user-friendly responses for scenarios like:
+    - Email address not found (`404` response).
+    - Invalid requests or missing fields (`400` response).
+    - Email sending errors (`500` response).
+
+### Frontend Changes
+- **Password Reset Request Page:**
+  - Created a user interface for entering the email address to request a password reset.
+  - Provided error and success feedback messages to improve user experience:
+    - Errors when the email is not found or when the email service fails.
+    - Success message when the password reset email is sent.
+
+- **Password Reset Page:**
+  - Designed a page for users to input a new password and confirm it using the UID and token from the reset link.
+  - Enhanced form validation to ensure both password fields match before submission.
+  - Added error handling for scenarios like invalid tokens or expired reset links.
+![image](https://github.com/user-attachments/assets/6cf67aba-de13-4973-92de-d960fa976574)
+
+### Security Measures
+- **Tokenization:**
+  - Used Django's built-in token generation (`default_token_generator`) for password reset functionality.
+  - Ensured the token is tied to the user's account and expires after a set duration.
+
+- **Environment Variable Usage:**
+  - Moved sensitive credentials (e.g., SendGrid API key) to an `.env` file to keep them secure.
+  - Used `os.getenv()` to access these variables in the Django settings.
+
+- **Logging:**
+  - Implemented detailed logging for email-sending operations and errors to facilitate debugging and enhance security monitoring.
+
+### Email Service
+- **SendGrid:**
+  - Configured SendGrid as the SMTP server for email delivery.
+  - Emails sent via SendGrid include:
+    - Password reset link with a secure UID and token.
+    - User-friendly content including the reset link and instructions.
+  - Fallback for development: Defaulted to console-based email output if SendGrid credentials are not provided.
+
+---
+
+### Notable Improvements
+- **Security:** Environment variable storage, tokenized reset links, and removal of sensitive credentials from version control.
+- **Reliability:** Integrated a robust email service (SendGrid) for consistent email delivery.
+- **User Experience:** Clear feedback on the frontend for both successful and failed operations.
+
+---
+
+
 ### Pasword share Implementation 
 
 **Enhancements** to Group Management and Sharing Functionality
