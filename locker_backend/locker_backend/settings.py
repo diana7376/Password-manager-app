@@ -42,7 +42,7 @@ STATICFILES_DIRS = [
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'default-secret-key')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
