@@ -2,9 +2,46 @@
 ****
 ## November 8 - 22, 2024
 ## Changelog:
-### Forgot Passwords Implementation
 
-### Backend Changes
+### ReDeployment by One-Line 🔁
+It has never been easier to redeploy our changes! Basically, we have managed to make the whole process of redeployment easier and less time-consuming.
+
+Before, we had to manually run the command `npm run build` to build the frontend. After that we had to copy the `build` folder into the backend, followed by building the `Dockerfile`, then pushing it into the hub and then on the Koyeb dashboard we would have to hit a button for the redeployment. Such a tedious task...
+
+Now, all we have to do is to execute a bash script and forget about the problems:
+```shell
+./deploy.sh
+```
+This was achievable by cloning the main branch from the [Frontend](https://github.com/diana7376/Password-manager-app-frontend) repository, building it, copying the necessary files and so on, as described above, but it all happens in an autonomous manner.
+### OTP Feature 🔑
+We are happy to announce that we have added One-Time Password (OTP) generation and management in *LockR*! ✅ 
+
+Basically, we have implemented OTP functionality for password items using TOTP (Time-Based One-Time Password) and `django-otp`.
+Users can now securely manage OTP keys (secrets) associated with their password items.
+
+We allow the user to update or delete the OTP key for a given password item.
+At the same time we let them call the endpoint that generates and returns a 6-digit OTP based on the stored secret key.
+
+❓How does it work?
+
+OTP keys are stored in Base32 format and are encrypted before being saved in the database.
+The codes are generated using the current Unix time and a defined time step (30 seconds by default).
+
+Furthermore, if the OTP generated does not meet the required 6 digits, it will regenerate until a valid 6-digit code is produced.
+The generated OTP is valid for 30 seconds (standard TOTP behavior).
+
+![img.png](https://i.imgur.com/1AmN0E0.png|)
+
+⚙️Implementation Details:
+
+The secret keys are Base32-encoded and decoded to ensure compatibility with the TOTP algorithm.
+We are also automatically handling padding for Base32 strings to ensure they are decoded correctly.
+
+The generated code is of six digits in size and the system has already been tested for platforms such as Discord and Roblox. The feature is fully integrated in both the [Backend](https://github.com/diana7376/Password-manager-app-backend) and the [Frontend](https://github.com/diana7376/Password-manager-app-frontend).
+
+### Forgot Passwords Implementation 🤔
+
+#### Backend Changes
 - **New API Endpoint:**
   - Added `PasswordResetRequestView` in the Django backend to handle password reset requests.
   - Generates a unique UID and token for secure password reset links.
@@ -32,7 +69,7 @@
     - Invalid requests or missing fields (`400` response).
     - Email sending errors (`500` response).
 
-### Frontend Changes
+#### Frontend Changes
 - **Password Reset Request Page:**
   - Created a user interface for entering the email address to request a password reset.
   - Provided error and success feedback messages to improve user experience:
@@ -47,7 +84,7 @@
 ![image](https://github.com/user-attachments/assets/26cc9fe4-860e-42c3-9472-4ce450210f14)
 ![image](https://github.com/user-attachments/assets/6cf67aba-de13-4973-92de-d960fa976574)
 
-### Security Measures
+#### Security Measures
 - **Tokenization:**
   - Used Django's built-in token generation (`default_token_generator`) for password reset functionality.
   - Ensured the token is tied to the user's account and expires after a set duration.
@@ -59,7 +96,7 @@
 - **Logging:**
   - Implemented detailed logging for email-sending operations and errors to facilitate debugging and enhance security monitoring.
 
-### Email Service
+#### Email Service
 - **SendGrid:**
   - Configured SendGrid as the SMTP server for email delivery.
   - Emails sent via SendGrid include:
@@ -67,17 +104,14 @@
     - User-friendly content including the reset link and instructions.
   - Fallback for development: Defaulted to console-based email output if SendGrid credentials are not provided.
 
----
-
-### Notable Improvements
+#### Notable Improvements
 - **Security:** Environment variable storage, tokenized reset links, and removal of sensitive credentials from version control.
 - **Reliability:** Integrated a robust email service (SendGrid) for consistent email delivery.
 - **User Experience:** Clear feedback on the frontend for both successful and failed operations.
 
----
 
 
-### Pasword share Implementation 
+### Pasword share Implementation 📩
 
 **Enhancements** to Group Management and Sharing Functionality
 We’ve added exciting new features to make password sharing easier and more secure than ever. Now, you can:
@@ -95,7 +129,7 @@ We’ve added exciting new features to make password sharing easier and more sec
 <img src="https://github.com/user-attachments/assets/32c6ddf1-811f-4fb0-899c-959a2591d20c" alt="Share" width="350" height="400" />
 
 Here is the visual demonstration of the vizial implementation.
-### Dark Mode Implementation
+### Dark Mode Implementation 🌚
 
 In this update, a comprehensive dark mode was implemented for the web application. The changes include:
 
@@ -144,10 +178,7 @@ This screenshots highlights the dark mode implementation, showcasing its contras
 
 These screenshots demonstrate the updated modals in dark mode, featuring a dark blue background and white text for improved readability.
 
-
-
-
-### Deployment implementation 
+### Deployment implementation ☁️
 Happy to announce that our application is finally live on [this temporary domain]([LockR](https://petite-danella-lockr-b5f8b6cb.koyeb.app/about)) where you can try out the latest stable version of **LockR**! 🎉
 
 This was possible with the help of tools such as:
