@@ -34,8 +34,8 @@ RUN echo "REACT_APP_API_BASE_URL=https://petite-danella-lockr-b5f8b6cb.koyeb.app
 
 # Copy the built frontend to the static directory
 WORKDIR /app
-RUN rm -rf static/ && mkdir static && \
-    cp -r /Password-manager-app-frontend/build/* static/
+RUN rm -rf static/* && mkdir -p static/build && \
+    cp -r /Password-manager-app-frontend/build/* static/build/
 
 # Copy backend requirements and code
 COPY requirements.txt .
