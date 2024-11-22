@@ -1,9 +1,8 @@
 # Changelog - LockR  
 ****
 ## November 8 - 22, 2024
-## Changelog: Forgot Passwords Implementation
-![image](https://github.com/user-attachments/assets/d09c7209-753d-4055-9132-2e1a21fdcb9f)
-![image](https://github.com/user-attachments/assets/26cc9fe4-860e-42c3-9472-4ce450210f14)
+## Changelog:
+### Forgot Passwords Implementation
 
 ### Backend Changes
 - **New API Endpoint:**
@@ -44,6 +43,8 @@
   - Designed a page for users to input a new password and confirm it using the UID and token from the reset link.
   - Enhanced form validation to ensure both password fields match before submission.
   - Added error handling for scenarios like invalid tokens or expired reset links.
+![image](https://github.com/user-attachments/assets/d09c7209-753d-4055-9132-2e1a21fdcb9f)
+![image](https://github.com/user-attachments/assets/26cc9fe4-860e-42c3-9472-4ce450210f14)
 ![image](https://github.com/user-attachments/assets/6cf67aba-de13-4973-92de-d960fa976574)
 
 ### Security Measures
