@@ -1,6 +1,16 @@
 # Changelog - LockR  
 ****
-## November 18, 2024
+## November 8 - 22, 2024
+**Enhancements** to Group Management and Sharing Functionality
+We’ve added exciting new features to make password sharing easier and more secure than ever. Now, you can:
+**1. Invite Users to Groups:**
+  - Easily invite others to your groups by entering their **username** or **email**.
+**2. Seamless Sharing of Group Passwords:**
+  - Once users accept the invitation, they gain view-only access to the group and its passwords. This ensures they can collaborate securely without modifying your data.
+**3. Accept or Decline Invitations:**
+  - Users have full control over invitations. They can accept to join the group or decline if they wish not to participate. This can be done via dedicated API endpoints or email links.
+**4. Secure Permission Management:**
+  - Group owners retain full control over group passwords and settings. Invited users have restricted access, ensuring they can only view the group and its contents.
 
 Happy to announce that our application is finally live on [this temporary domain]([LockR](https://petite-danella-lockr-b5f8b6cb.koyeb.app/about)) where you can try out the latest stable version of **LockR**! 🎉
 
