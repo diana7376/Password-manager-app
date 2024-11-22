@@ -14,7 +14,11 @@ We’ve added exciting new features to make password sharing easier and more sec
 **4. Secure Permission Management:**
   - Group owners retain full control over group passwords and settings. Invited users have restricted access, ensuring they can only view the group and its contents.
 
+**Visual updates**
 
+<img src="https://github.com/user-attachments/assets/32c6ddf1-811f-4fb0-899c-959a2591d20c" alt="Share" width="350" height="400" />
+
+Here is the visual demonstration of the vizial implementation.
 ### Dark Mode Implementation
 
 In this update, a comprehensive dark mode was implemented for the web application. The changes include:
