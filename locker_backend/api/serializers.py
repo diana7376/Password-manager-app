@@ -2,8 +2,11 @@ from django.contrib.auth.password_validation import validate_password
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from .models import PasswordItems, Groups, BaseUser, PasswordHistory
+
 from .models.invitation import Invitation
+from api.models import PasswordItems, Groups, BaseUser, PasswordHistory
+from api.models.encryption import decrypt_password
+
 
 
 class GroupsSerializer(serializers.ModelSerializer):
@@ -32,10 +35,11 @@ class PasswordItemSerializer(serializers.ModelSerializer):
     groupId = serializers.PrimaryKeyRelatedField(source= 'group', queryset=Groups.objects.all(), required=False)
     passId = serializers.IntegerField(source= 'id', read_only=True)
     userId = serializers.PrimaryKeyRelatedField(source='user', read_only=True)
+    otpKey = serializers.CharField(source='otp_key', allow_null=True, required=False)
 
     class Meta:
         model = PasswordItems
-        fields = ['passId','itemName', 'userName', 'password', 'url', 'comment', 'groupId', 'userId']
+        fields = ['passId','itemName', 'userName', 'password', 'url', 'comment', 'groupId', 'userId', 'otpKey']
         read_only_fields = ['userId']  # Ensure userId is read-only
 
     def validate(self, attrs):
@@ -50,10 +54,6 @@ class PasswordItemSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        item_name = validated_data['item_name']
-
-        if PasswordItems.objects.filter(user= user, item_name= item_name):
-            raise serializers.ValidationError({'item_name' : 'A PasswordItem with this name already exists.'})
 
         validated_data['user'] = user
         return super().create(validated_data)
@@ -61,9 +61,20 @@ class PasswordItemSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if 'group' not in validated_data:
             validated_data['group'] = None
-
+        if 'otp_key' in validated_data:
+            # Discard the new otp_key from validated data to avoid changing it
+            validated_data.pop('otp_key')
         validated_data['user'] = self.context['request'].user
         return super().update(instance, validated_data)
+
+    def to_representation(self, instance):
+        # Return decrypted otp_key for representation (if needed)
+        ret = super().to_representation(instance)
+        if 'otpKey' in ret:
+            del ret['otpKey']
+        # if instance.otp_key:
+        #     ret['otp_key'] = decrypt_password(instance.otp_key)
+        return ret
 
 
 
