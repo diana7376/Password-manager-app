@@ -20,7 +20,8 @@ class PasswordItemsOTPViewSet(viewsets.ViewSet):
         otp_key = request.data.get('otpKey')
         if not otp_key:
             return Response({'responseKey': 'Secret key is required'}, status=status.HTTP_400_BAD_REQUEST)
-
+        # Trim leading and trailing white spaces
+        otp_key = otp_key.replace(" ", "")
         password_item.otp_key = otp_key
         password_item.save_otp_key()
         return Response({'responseKey': 'OTP key updated successfully'}, status=status.HTTP_200_OK)
@@ -33,25 +34,25 @@ class PasswordItemsOTPViewSet(viewsets.ViewSet):
             return Response({'responseKey': 'No OTP key found for this item'}, status=status.HTTP_404_NOT_FOUND)
 
         try:
-            # Decrypt OTP key and ensure it is Base32 encoded
+            # Decrypt OTP key
             decrypted_key = decrypt_password(password_item.otp_key)
 
-            # Fix padding issue with Base32
-            decrypted_key = decrypted_key.upper()  # Make sure the key is uppercase
-            # Pad the string to ensure it's a multiple of 8 characters for Base32 decoding
-            padding = '=' * (8 - len(decrypted_key) % 8)  # Add necessary padding
-            decrypted_key += padding
+            # Ensure the key is uppercase
+            decrypted_key = decrypted_key.upper()
 
-            base32_key = base64.b32decode(decrypted_key)  # Decode the Base32 key
+            # Calculate missing padding
+            padding_needed = (8 - len(decrypted_key) % 8) % 8  # Padding required to make length a multiple of 8
+            decrypted_key += '=' * padding_needed
 
-            # Get current time in seconds since Unix epoch
-            now = int(time.time())  # This will be the number of seconds since epoch
-            step = 30  # OTP step interval in seconds (common value is 30)
+            # Decode the Base32 key
+            base32_key = base64.b32decode(decrypted_key, casefold=True)  # Allow mixed case
 
             # Generate OTP
+            now = int(time.time())
+            step = 30
             otp = totp(key=base32_key, step=step, digits=6, t0=0)
 
-            # Ensure OTP is 6 digits (if there’s any issue with generation)
+            # Ensure OTP is 6 digits
             if len(str(otp)) != 6:
                 return Response({'responseKey': 'Failed to generate a valid OTP.'},
                                 status=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -59,7 +60,6 @@ class PasswordItemsOTPViewSet(viewsets.ViewSet):
             return Response({'responseKey': otp}, status=status.HTTP_200_OK)
 
         except Exception as e:
-            # If there's any error during decryption or OTP generation, log it and return a response
             return Response({'responseKey': f'Error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     @action(methods=['delete'], detail=True, url_path='delete-otp')

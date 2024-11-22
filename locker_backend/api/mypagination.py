@@ -13,6 +13,8 @@ class MyPageNumberPagination(PageNumberPagination):
         link = super().get_next_link()
         if link:
             parsed_url = urlparse(link)
+            # if parsed_url.scheme == 'http':
+            #     link = urlunparse(parsed_url._replace(scheme='https'))
             if getattr(settings, 'CORS_ALLOWED_ORIGINS', []) == ["http://localhost:3000"]:
                 link = urlunparse(parsed_url._replace(scheme='https'))
         return link
@@ -21,7 +23,9 @@ class MyPageNumberPagination(PageNumberPagination):
         link = super().get_previous_link()
         if link:
             parsed_url = urlparse(link)
-            if parsed_url.scheme == 'http':
+            # if parsed_url.scheme == 'http':
+            #     link = urlunparse(parsed_url._replace(scheme='https'))
+            if getattr(settings, 'CORS_ALLOWED_ORIGINS', []) == ["http://localhost:3000"]:
                 link = urlunparse(parsed_url._replace(scheme='https'))
         return link
 
