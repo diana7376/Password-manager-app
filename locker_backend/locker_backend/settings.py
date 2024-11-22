@@ -22,6 +22,25 @@ logger = logging.getLogger(__name__)
 
 logger.info("Starting the Django app...")
 
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',  # This will capture all logs with DEBUG level and above
+#             'class': 'logging.StreamHandler',
+#             'stream': 'ext://sys.stdout',  # Output to the console
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],  # Add console handler for the django logger
+#             'level': 'DEBUG',  # Set the log level to DEBUG to capture all logs
+#             'propagate': True,
+#         },
+#     },
+# }
+
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -78,6 +97,14 @@ MIDDLEWARE = [
     'locker_backend.middleware.CheckFrontendRequestMiddleware',
 
 ]
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_TRUSTED_ORIGINS = ['http://localhost:3000']
+# settings.py
+
+CSRF_COOKIE_HTTPONLY = False  # Make CSRF token accessible to JavaScript
+CSRF_COOKIE_SAMESITE = 'Lax'  # Use 'Strict' or 'Lax' based on your requirements
+CSRF_COOKIE_SECURE = False    # Set to True if using HTTPS in production
+
 
 ROOT_URLCONF = 'locker_backend.urls'
 
@@ -98,6 +125,17 @@ TEMPLATES = [
         },
     },
 ]
+
+#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.sendgrid.net'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'apikey'  # This is the username for SendGrid (always 'apikey')
+EMAIL_HOST_PASSWORD = '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'
+DEFAULT_FROM_EMAIL = 'wexow66243@kazvi.com'  # Replace with your email address
+
+
 
 
 

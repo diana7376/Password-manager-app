@@ -18,10 +18,14 @@ from django.contrib import admin
 from django.urls import path, include, re_path
 from django.views.generic import TemplateView
 
+from api.password_request_view_set import PasswordResetRequestView
+from api.password_confirm_view_set import PasswordResetConfirmView
+
 urlpatterns = [
     path('api/', include('api.urls')),
     path('', TemplateView.as_view(template_name='index.html'), name='home'),
     # Serve React app for all other routes
     re_path(r'^(?!api|admin|static|media).*$', TemplateView.as_view(template_name='index.html')),
-
+    path('api/password_reset/', PasswordResetRequestView.as_view(), name='password_reset_request'),
+    path('api/reset/<uidb64>/<token>/', PasswordResetConfirmView.as_view(), name='password_reset_confirm'),
 ]
