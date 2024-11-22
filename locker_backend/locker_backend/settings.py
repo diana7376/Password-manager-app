@@ -132,7 +132,7 @@ EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'apikey'  # This is the username for SendGrid (always 'apikey')
-EMAIL_HOST_PASSWORD = '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'
+EMAIL_HOST_PASSWORD = os.getenv('SENDGRID_API_KEY')
 DEFAULT_FROM_EMAIL = 'wexow66243@kazvi.com'  # Replace with your email address
 
 
