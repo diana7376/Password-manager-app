@@ -114,22 +114,30 @@ class GroupsViewSet(viewsets.ModelViewSet):
         group = self.get_object()
         current_user = request.user
 
+        # Ensure the current user is the group owner
         if group.user != current_user:
             raise ValidationError('You do not have permission to remove users from this group.')
 
+        # Accept only username for removing an accepted user
         username_to_remove = request.data.get('username')
+
         if not username_to_remove:
-            raise ValidationError('No username provided.')
+            raise ValidationError('Provide the username of the user to remove.')
 
         try:
+            # Find the user by username
             user_to_remove = BaseUser.objects.get(username=username_to_remove)
+
+            # Check if the user is a member of the group
+            if not group.invited_members.filter(pk=user_to_remove.pk).exists():
+                raise ValidationError('This user is not a member of the group.')
+
+            # Remove the user from the group
+            group.invited_members.remove(user_to_remove)
+
         except BaseUser.DoesNotExist:
             raise ValidationError('The user does not exist.')
 
-        if not group.invited_members.filter(user_id=user_to_remove.user_id).exists():
-            raise ValidationError('This user is not invited to the group.')
-
-        group.invited_members.remove(user_to_remove)
         return Response({'message': f'User {username_to_remove} has been successfully removed from the group.'})
 
     @action(methods=['get'], detail=False, url_path='pending-invitations')
@@ -140,25 +148,29 @@ class GroupsViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='accept-invitation')
     def accept_invitation(self, request):
-        email = request.data.get('email')
+        username = request.user.username  # Automatically use the current user's username
+        email = request.data.get('email')  # Optional, for email-based invitations
         group_id = request.data.get('group_id')
 
-        # Validate the input
-        if not email or not group_id:
-            raise ValidationError('Email and group_id are required.')
+        # Validate input
+        if not group_id:
+            raise ValidationError('group_id is required.')
 
         try:
-            # Fetch the invitation using the custom primary key
-            invitation = Invitation.objects.get(email=email, group__group_id=group_id, accepted=False)
+            if email:
+                # Accept invitation via email
+                invitation = Invitation.objects.get(email=email, group__group_id=group_id, accepted=False)
+            else:
+                # Accept invitation via username
+                invitation = Invitation.objects.get(
+                    invited_user__username=username, group__group_id=group_id, accepted=False
+                )
         except Invitation.DoesNotExist:
-            raise ValidationError('No pending invitation found for this email and group.')
+            raise ValidationError('No pending invitation found for this user or email.')
 
-        # Add the invited user to the group
+        # Add the invited user to the group's invited members
         if invitation.invited_user:
             invitation.group.invited_members.add(invitation.invited_user)
-        else:
-            # Handle cases where the user is invited via email but isn't linked to a user account
-            pass
 
         # Mark the invitation as accepted
         invitation.accepted = True
@@ -168,23 +180,31 @@ class GroupsViewSet(viewsets.ModelViewSet):
 
     @action(methods=['post'], detail=False, url_path='decline-invitation')
     def decline_invitation(self, request):
+        username = request.data.get('username')
         email = request.data.get('email')
         group_id = request.data.get('group_id')
 
-        # Validate the input
-        if not email or not group_id:
-            raise ValidationError('Email and group_id are required.')
+        # Validate input
+        if not group_id or (not username and not email):
+            raise ValidationError('group_id and either username or email are required.')
 
         try:
-            # Fetch the invitation using the custom primary key
-            invitation = Invitation.objects.get(email=email, group__group_id=group_id, accepted=False)
+            # Fetch the invitation based on email or username
+            if username:
+                invitation = Invitation.objects.get(
+                    invited_user__username=username, group__group_id=group_id, accepted=False
+                )
+            elif email:
+                invitation = Invitation.objects.get(
+                    email=email, group__group_id=group_id, accepted=False
+                )
         except Invitation.DoesNotExist:
-            raise ValidationError('No pending invitation found for this email and group.')
+            raise ValidationError('No pending invitation found for the provided information.')
 
         # Delete the invitation
         invitation.delete()
 
-        return Response({'message': 'You have declined the invitation.'})
+        return Response({'message': 'You have successfully declined the invitation.'})
 
     @action(methods=['get'], detail=True)
     def get_specific_groups(self, request, pk=None):
