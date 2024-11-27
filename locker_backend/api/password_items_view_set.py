@@ -25,18 +25,17 @@ class PasswordItemsViewSet(viewsets.ModelViewSet):
         user = self.request.user
         group_id = self.kwargs.get('groups_pk', None)  # Get the group_id from the URL parameters
 
-        # Filter password items for groups where the user is either the owner or an invited member
-        queryset = PasswordItems.objects.filter(
-            Q(group__user=user) | Q(group__invited_members=user)
-        )
+        # Handle the case where 'groups_pk' is passed as 'null' in the URL
+        if group_id == "null":
+            group_id = None
 
-        # Handle the case for null group_id (group_id == None)
-        if group_id == 'null':
-            queryset = queryset.filter(group_id__isnull=True)
-        elif group_id:
-            queryset = queryset.filter(group_id=group_id)
+        # Filter password items based on group_id (null or specific)
+        if group_id is None:
+            queryset = PasswordItems.objects.filter(group_id__isnull=True, user=user)
+        else:
+            queryset = PasswordItems.objects.filter(group_id=group_id, user=user)
 
-        # Apply search filter after the base queryset logic
+        # Apply additional search filters, if any
         search = self.request.query_params.get('search', None)
         if search:
             queryset = queryset.filter(
